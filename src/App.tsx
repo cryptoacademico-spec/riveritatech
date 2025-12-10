@@ -421,7 +421,7 @@ const About = () => (
 
                         {/* LINKEDIN (¡EDITA EL HREF AQUÍ!) */}
                         <a 
-                            href="PON_AQUI_TU_LINKEDIN" 
+                            href="https://www.linkedin.com/in/diego-fernando-rivera-lopez-392186133?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app" 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 px-6 py-3 bg-[#0077b5]/90 text-white rounded-xl hover:bg-[#0077b5] transition-colors font-bold shadow-lg"
