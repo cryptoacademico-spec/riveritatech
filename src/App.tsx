@@ -74,7 +74,7 @@ const misLaboratorios = [
       etiqueta: "Más Popular",
       color: "from-blue-600 to-cyan-500",
       icono: <Database size={48} className="text-white drop-shadow-lg"/>,
-      link: "vsan-lab.riveritatech.com" 
+      link: "https://vsan-lab.riveritatech.com" 
     },
     {
       id: 2,
