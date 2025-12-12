@@ -70,7 +70,7 @@ const misLaboratorios = [
       titulo: "Aprende a configurar vSAN",
       // ENFOQUE: Modernidad y eliminación de hardware legado
       descripcion: "Convierte discos locales en un Datastore indestructible. Domina la HCI y dile adiós a las SAN tradicionales para siempre.",
-      nivel: "Básico",
+      nivel: "Intermedio",
       etiqueta: "Más Popular",
       color: "from-blue-600 to-cyan-500",
       icono: <Database size={48} className="text-white drop-shadow-lg"/>,
@@ -103,7 +103,7 @@ const misLaboratorios = [
       titulo: "vSphere DRS (Balanceo)",
       // ENFOQUE: Rendimiento y Automatización
       descripcion: "El piloto automático de tu clúster. Deja que el sistema mueva tus cargas para que ninguna VM sufra nunca por falta de CPU o RAM.",
-      nivel: "Intermedio",
+      nivel: "Básico",
       etiqueta: "Performance",
       color: "from-orange-500 to-amber-500", // Naranja de advertencia/balanceo
       icono: <Scale size={48} className="text-white drop-shadow-lg"/>,
@@ -114,7 +114,7 @@ const misLaboratorios = [
       titulo: "vSphere vMotion Live",
       // ENFOQUE: "Magia" técnica
       descripcion: "Teletransportación en tiempo real. Mueve servidores activos entre hardware físico sin perder ni un solo ping de conexión. Magia pura.",
-      nivel: "Experto",
+      nivel: "Básico",
       etiqueta: "Magia",
       color: "from-purple-600 to-indigo-500",
       icono: <ArrowRightLeft size={48} className="text-white drop-shadow-lg"/>,
