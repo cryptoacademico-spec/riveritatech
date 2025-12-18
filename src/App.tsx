@@ -127,7 +127,7 @@ const misLaboratorios = [
       id: 1,
       titulo: "VMWARE LABS GRATIS: Simula vMotion, DRS y HA en vSphere",
       tipo: "Video",
-      duracion: "Nuevo", 
+      duracion: "Tutorial", 
       // ID extraído de tu imagen: iFr16fXUjz4
       thumbnail: "https://img.youtube.com/vi/iFr16fXUjz4/maxresdefault.jpg", 
       link: "https://www.youtube.com/watch?v=iFr16fXUjz4"
