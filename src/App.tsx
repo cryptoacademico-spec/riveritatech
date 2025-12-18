@@ -149,6 +149,15 @@ const misLaboratorios = [
       // ID extraído de tu imagen: -9a1mGe1Q8c
       thumbnail: "https://img.youtube.com/vi/-9a1mGe1Q8c/maxresdefault.jpg",
       link: "https://www.youtube.com/watch?v=-9a1mGe1Q8c"
+    },
+    {
+      id: 4,
+      titulo: "Aprende vSAN desde Cero | Laboratorio VMware",
+      tipo: "Video",
+      duracion: "Tutorial",
+      // ID extraído de tu imagen: -9a1mGe1Q8c
+      thumbnail: "https://img.youtube.com/vi/-oBl2k1PHc4k/maxresdefault.jpg",
+      link: "https://www.youtube.com/watch?v=oBl2k1PHc4k"
     }
   ];
 
