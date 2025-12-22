@@ -381,8 +381,8 @@ const About = () => (
                         alt="Riveritatech" 
                         className="w-full h-full rounded-full object-cover border-4 border-slate-800 shadow-2xl relative z-10 grayscale group-hover:grayscale-0 transition-all duration-500"
                     />
-                    {/* Badge VCP Flotante */}
-                    <div className="absolute -bottom-4 -right-4 bg-slate-950 border border-blue-500 text-blue-400 px-4 py-2 rounded-xl font-bold text-xs shadow-xl z-20 flex items-center gap-2">
+                     {/* 1. Badge VCP (Subido) */}
+                     <div className="absolute bottom-10 -right-6 bg-slate-950 border border-blue-500 text-blue-400 px-4 py-2 rounded-xl font-bold text-xs shadow-xl z-20 flex items-center gap-2 transform transition-transform hover:scale-105">
                         <CheckCircle size={14} /> VCP CERTIFIED
                     </div>
                     {/* 2. Badge VCF (NUEVO - Abajo) */}
