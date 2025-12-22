@@ -385,6 +385,10 @@ const About = () => (
                     <div className="absolute -bottom-4 -right-4 bg-slate-950 border border-blue-500 text-blue-400 px-4 py-2 rounded-xl font-bold text-xs shadow-xl z-20 flex items-center gap-2">
                         <CheckCircle size={14} /> VCP CERTIFIED
                     </div>
+                    {/* 2. Badge VCF (NUEVO - Abajo) */}
+                    <div className="absolute -bottom-2 -right-6 bg-slate-950 border border-emerald-500 text-emerald-400 px-4 py-2 rounded-xl font-bold text-xs shadow-xl z-20 flex items-center gap-2 transform transition-transform hover:scale-105">
+                        <CheckCircle size={14} /> VCF ADMIN
+                    </div>
                 </div>
                 
                 <div className="flex-1 text-center md:text-left relative z-10">
