@@ -158,6 +158,15 @@ const misLaboratorios = [
       // ID extraído de tu imagen: -9a1mGe1Q8c
       thumbnail: "https://img.youtube.com/vi/oBl2k1PHc4k/maxresdefault.jpg",
       link: "https://www.youtube.com/watch?v=oBl2k1PHc4k"
+    },
+    {
+      id: 5,
+      titulo: "Instalación y Configuración vCenter 9.0.1 | Guía Desde Cero",
+      tipo: "Video",
+      duracion: "Tutorial",
+      // ID extraído de tu imagen: -9a1mGe1Q8c
+      thumbnail: "https://img.youtube.com/vi/7MpL3LSGJ5U/maxresdefault.jpg",
+      link: "https://www.youtube.com/watch?v=7MpL3LSGJ5U"
     }
   ];
 
@@ -229,7 +238,7 @@ const Hero = ({ setPage }: any) => (
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
         </span>
-        Nuevo: vSAN 8 LAB
+        Nuevo: Tutorial Vcenter 9.0.1
       </div>
 
       <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tight mb-8 leading-tight animate-in slide-in-from-bottom-6 duration-700">
