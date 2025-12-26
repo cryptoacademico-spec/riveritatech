@@ -176,7 +176,7 @@ const misLaboratorios = [
       // ID extraído de tu imagen: -9a1mGe1Q8c
       thumbnail: "https://img.youtube.com/vi/uL_IviZBzPM/maxresdefault.jpg",
       link: "https://www.youtube.com/watch?v=uL_IviZBzPM"
-    } 
+    }
   ];
 
 // --- COMPONENTES ---
