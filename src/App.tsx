@@ -170,7 +170,7 @@ const misLaboratorios = [
     },
     {
       id: 6,
-      titulo: "Al crear VM en VMware: NO des "Siguiente" sin saber ESTO (Thin vs Thick)",
+      titulo: "Al crear VM en VMware: NO des Siguiente sin saber ESTO (Thin vs Thick)",
       tipo: "Video",
       duracion: "Tutorial",
       // ID extraído de tu imagen: -9a1mGe1Q8c
