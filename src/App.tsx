@@ -167,7 +167,15 @@ const misLaboratorios = [
       // ID extraído de tu imagen: -9a1mGe1Q8c
       thumbnail: "https://img.youtube.com/vi/7MpL3LSGJ5U/maxresdefault.jpg",
       link: "https://www.youtube.com/watch?v=7MpL3LSGJ5U"
-    }
+    },
+      id: 6,
+      titulo: "Al crear VM en VMware: NO des "Siguiente" sin saber ESTO (Thin vs Thick)",
+      tipo: "Video",
+      duracion: "Tutorial",
+      // ID extraído de tu imagen: -9a1mGe1Q8c
+      thumbnail: "https://img.youtube.com/vi/uL_IviZBzPM/maxresdefault.jpg",
+      link: "https://www.youtube.com/watch?v=uL_IviZBzPM"
+    } 
   ];
 
 // --- COMPONENTES ---
