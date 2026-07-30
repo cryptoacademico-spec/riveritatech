@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #02040a;
+    color: #f8fafc;
+    font-family: 'Outfit', sans-serif;
+    overflow-x: hidden;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* Custom Luxury Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #02040a;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e0810;
+  border-radius: 4px;
+  border: 1px solid rgba(204, 9, 47, 0.3);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #cc092f;
+}
+
+/* $50k Luxury Glassmorphism Utilities */
+.glass-panel-luxury {
+  background: rgba(8, 12, 22, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+.glass-card-luxury {
+  background: linear-gradient(135deg, rgba(20, 10, 25, 0.6) 0%, rgba(5, 12, 20, 0.85) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.6);
+}
+
+.glass-card-luxury:hover {
+  border-color: rgba(204, 9, 47, 0.4);
+  box-shadow: 0 0 35px rgba(204, 9, 47, 0.25), 0 0 15px rgba(0, 194, 136, 0.2);
+}
+
+/* Broadcom Red & VMware VCF Green Glows */
+.glow-broadcom-red {
+  box-shadow: 0 0 30px rgba(204, 9, 47, 0.4);
+}
+
+.glow-vcf-green {
+  box-shadow: 0 0 30px rgba(0, 194, 136, 0.4);
+}
+
+/* Ambient Pulse Keyframes */
+@keyframes pulseVCF {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.75; transform: scale(1.05); }
+}
+
+.animate-pulse-vcf {
+  animation: pulseVCF 6s ease-in-out infinite;
+}
