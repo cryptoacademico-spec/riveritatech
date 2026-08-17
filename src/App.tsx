@@ -20,12 +20,29 @@ export function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
 
-  // Read URL Path on initial page load (Support direct URL access like /youtube-scripts)
-  useEffect(() => {
-    const rawPath = window.location.pathname.toLowerCase().replace(/^\/+|\/+$/g, '');
-    if (rawPath === 'youtube-scripts') {
-      setCurrentPage('youtube-scripts');
+  // Synchronize currentPage state with browser URL path dynamically (History API)
+  const navigateTo = (page: string) => {
+    setCurrentPage(page);
+    const targetPath = page === 'home' ? '/' : `/${page}`;
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState({}, '', targetPath);
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    const syncPageWithUrl = () => {
+      const rawPath = window.location.pathname.toLowerCase().replace(/^\/+|\/+$/g, '');
+      if (['youtube-scripts', 'labs', 'scripts', 'tutorials', 'about', 'stack'].includes(rawPath)) {
+        setCurrentPage(rawPath);
+      } else {
+        setCurrentPage('home');
+      }
+    };
+
+    syncPageWithUrl();
+    window.addEventListener('popstate', syncPageWithUrl);
+    return () => window.removeEventListener('popstate', syncPageWithUrl);
   }, []);
 
   // TRIONN SHARED SCROLL DRIVER ENGINE STATES (0.0 to 1.0)
@@ -175,7 +192,7 @@ export function App() {
       {/* Top Fixed Header Navbar with Synchronized TRIONN Elastic Easing */}
       <Navbar
         currentPage={currentPage}
-        setPage={setCurrentPage}
+        setPage={navigateTo}
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}
         onOpenAuth={() => setIsAuthOpen(true)}
@@ -197,7 +214,7 @@ export function App() {
       >
         {currentPage === 'home' && (
           <>
-            <Hero setPage={setCurrentPage} onOpenAuth={() => setIsAuthOpen(true)} scrollProgress={normalizedScroll} />
+            <Hero setPage={navigateTo} onOpenAuth={() => setIsAuthOpen(true)} scrollProgress={normalizedScroll} />
             <BroadcomVMwareBadges />
             <YouTubeScriptsVault />
             <PowerCLITerminal />
