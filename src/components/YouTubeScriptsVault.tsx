@@ -108,11 +108,8 @@ export const YouTubeScriptsVault: React.FC = () => {
     // 1. Calculate the EXACT mathematical PIN required for this user handle matching generar_pin.py
     const expectedValidPin = calculateValidPinForUser(cleanHandle);
 
-    // Master test PINs allowed for testing
-    const validAllowedPins = [expectedValidPin, 'RIV001', 'RIV725', 'RIV867', 'RIV577'];
-
-    // 2. STRICT VALIDATION: Reject any invalid PIN guessed by visitors
-    if (!validAllowedPins.includes(cleanPin)) {
+    // 2. ABSOLUTE STRICT VALIDATION: ONLY the exact mathematical PIN calculated for cleanHandle is valid! (ZERO BACKDOORS)
+    if (cleanPin !== expectedValidPin) {
       setVerificationError(`❌ PIN inválido para @${cleanHandle}. El PIN "${cleanPin}" no corresponde a este usuario. Comenta "script" en el video en YouTube para recibir tu PIN exacto.`);
       return;
     }
@@ -226,7 +223,7 @@ export const YouTubeScriptsVault: React.FC = () => {
                         </button>
                       </div>
                     ) : (
-                      /* DIRECT INLINE FORM - STRICT PIN MATCHING */
+                      /* DIRECT INLINE FORM - ABSOLUTE STRICT PIN MATCHING */
                       <div className="bg-slate-950/90 p-5 rounded-2xl border border-white/10 space-y-3.5 font-mono">
                         
                         <div className="flex items-center gap-2 text-xs text-slate-300 font-bold pb-2 border-b border-white/5">
