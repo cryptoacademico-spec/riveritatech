@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Youtube, Search, Code, CheckCircle2, Copy, Download, Lock, Unlock, Play, Key, Sparkles, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Youtube, Search, Code, CheckCircle2, Copy, Download, Lock, Unlock, Play, ShieldAlert, Sparkles, AlertCircle, KeyRound, HelpCircle } from 'lucide-react';
 import { ArcCardReveal } from './ArcCardReveal';
 import { SvgStrokeDraw } from './SvgStrokeDraw';
 
@@ -11,21 +11,24 @@ interface YouTubeScriptItem {
   category: string;
   description: string;
   ps1FileName: string;
-  scriptCode: string;
+  scriptFilePath: string;
+  scriptCodeContent: string;
 }
 
 const youtubeScriptsData: YouTubeScriptItem[] = [
   {
-    id: 'yt-sc-1',
+    id: 'yt-vcenter-91-filter',
     videoTitle: 'Cómo listar y filtrar VMs en vCenter 9.1 con PowerCLI 🚀',
-    videoId: 'vcenter-91-filter-vms',
-    youtubeUrl: 'https://www.youtube.com/@RiveritaTech',
+    videoId: 'AzdTR59DhD0',
+    youtubeUrl: 'https://www.youtube.com/watch?v=AzdTR59DhD0',
     category: 'vSphere & vCenter 9.1',
-    description: 'Script oficial .ps1 del video donde aprendemos a listar e inspeccionar máquinas virtuales en vCenter 9.1 con filtrado de CPU, RAM y Datastore.',
-    ps1FileName: 'RiveritaTech_vCenter91_Filter_VMs.ps1',
-    scriptCode: `# ====================================================================
+    description: 'Script oficial .ps1 para listar e inspeccionar el estado de las máquinas virtuales en vCenter 9.1 con filtrado de CPU, RAM, Datastore e IPs.',
+    ps1FileName: 'script_vcenter91_filter_vms.ps1',
+    scriptFilePath: '/scripts/script_vcenter91_filter_vms.ps1',
+    scriptCodeContent: `# ====================================================================
 # RIVERITA TECH - SCRIPT OFICIAL YOUTUBE
 # Video: Cómo listar y filtrar VMs en vCenter 9.1 con PowerCLI
+# Link Oficial: https://www.youtube.com/watch?v=AzdTR59DhD0
 # Web Oficial: www.riveritatech.com | Canal: @RiveritaTech
 # ====================================================================
 
@@ -33,6 +36,10 @@ Param(
     [string]$vCenterServer = "vcenter.corp.local",
     [string]$FilterStatus = "PoweredOn"
 )
+
+Write-Host "==========================================================" -ForegroundColor Cyan
+Write-Host " RIVERITA TECH - INVENTARIO & REPORTE vCENTER 9.1" -ForegroundColor Green
+Write-Host "==========================================================" -ForegroundColor Cyan
 
 Write-Host "[+] Conectando a vCenter Server: $vCenterServer..." -ForegroundColor Green
 Connect-VIServer -Server $vCenterServer -WarningAction SilentlyContinue
@@ -44,73 +51,90 @@ $Report | Format-Table -AutoSize
 
 Write-Host "[+] Consulta completada con exito en Riverita Tech Platform." -ForegroundColor Green
 `
-  },
-  {
-    id: 'yt-sc-2',
-    videoTitle: '¡Sin SDDC Manager! Cómo licenciar vCenter 9 con VCF Operations 9.1 🔥',
-    videoTitle_clean: 'Licenciamiento vCenter 9.1 con VCF Operations 9.1',
-    videoId: 'vcf-ops-91-licensing',
-    youtubeUrl: 'https://www.youtube.com/@RiveritaTech',
-    category: 'VCF Operations 9.1',
-    description: 'Script de diagnóstico de claves de licencias VCF 9.1 y validación de sockets y cores por host ESXi 9.1.',
-    ps1FileName: 'RiveritaTech_VCF_Ops91_Licensing_Check.ps1',
-    scriptCode: `# ====================================================================
-# RIVERITA TECH - SCRIPT OFICIAL YOUTUBE
-# Video: Licenciamiento vCenter 9 con VCF Operations 9.1 sin SDDC Manager
-# Web Oficial: www.riveritatech.com | Canal: @RiveritaTech
-# ====================================================================
-
-Write-Host "=== AUDITORIA DE LICENCIAS VCF OPERATIONS 9.1 ===" -ForegroundColor Yellow
-$Hosts = Get-VMHost
-
-foreach ($h in $Hosts) {
-    Write-Host "Host: $($h.Name) | Sockets: $($h.NumCpuSockets) | Cores Total: $($h.NumCpuCores)" -ForegroundColor Cyan
-}
-
-Write-Host "=== VALIDACION VCF 9.1 COMPLETA EN RIVERITA TECH ===" -ForegroundColor Green
-`
   }
 ];
 
 export const YouTubeScriptsVault: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeModalScript, setActiveModalScript] = useState<YouTubeScriptItem | null>(null);
-  const [userHandle, setUserHandle] = useState('');
-  const [apiKeyInput, setApiKeyInput] = useState('');
-  const [showApiKeyBox, setShowApiKeyBox] = useState(false);
+  
+  // Verification form states
+  const [userHandleInput, setUserHandleInput] = useState('');
+  const [pinInput, setPinInput] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
-  const [unlockedScriptIds, setUnlockedScriptIds] = useState<string[]>([]);
   const [verificationError, setVerificationError] = useState<string | null>(null);
+  
+  // Unlocked scripts and used PINs persistence
+  const [unlockedScriptIds, setUnlockedScriptIds] = useState<string[]>(() => {
+    const saved = localStorage.getItem('riverita_unlocked_scripts');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [usedPins, setUsedPins] = useState<string[]>(() => {
+    const saved = localStorage.getItem('riverita_used_pins');
+    return saved ? JSON.parse(saved) : ['Riv0'];
+  });
+
   const [copiedScriptId, setCopiedScriptId] = useState<string | null>(null);
 
-  const handleVerifyComment = (script: YouTubeScriptItem) => {
+  useEffect(() => {
+    localStorage.setItem('riverita_unlocked_scripts', JSON.stringify(unlockedScriptIds));
+  }, [unlockedScriptIds]);
+
+  useEffect(() => {
+    localStorage.setItem('riverita_used_pins', JSON.stringify(usedPins));
+  }, [usedPins]);
+
+  const handleVerifyCommentAndPin = (script: YouTubeScriptItem) => {
     setVerificationError(null);
-    const cleanHandle = userHandle.trim().toLowerCase();
+    const cleanHandle = userHandleInput.trim().toLowerCase();
+    const cleanPin = pinInput.trim();
 
     if (!cleanHandle) {
       setVerificationError('Ingresa tu usuario de YouTube (ej: @carloscelestino889)');
       return;
     }
 
+    if (!cleanPin) {
+      setVerificationError('Ingresa el PIN de 4 caracteres (ej: Riv1, Riv2)');
+      return;
+    }
+
+    // Check if the PIN was ALREADY USED & KILLED by someone else
+    const normalizedPin = cleanPin.toUpperCase();
+    const isPinBurned = usedPins.some((p) => p.toUpperCase() === normalizedPin);
+
+    if (isPinBurned) {
+      setVerificationError(`❌ El PIN "${cleanPin}" ya fue utilizado y quemado por su dueño. Deja tu propio comentario en el video para recibir un PIN único nuevo.`);
+      return;
+    }
+
     setIsVerifying(true);
 
-    // YouTube API Verification Query simulation
+    // Simulate verification & PIN redemption
     setTimeout(() => {
       setIsVerifying(false);
+      
+      // Mark PIN as USED/KILLED permanently
+      setUsedPins((prev) => [...prev, cleanPin]);
+
+      // Unlock script for this video
       if (!unlockedScriptIds.includes(script.id)) {
         setUnlockedScriptIds((prev) => [...prev, script.id]);
       }
-    }, 900);
+
+      // Close modal
+      setActiveModalScript(null);
+    }, 800);
   };
 
-  const downloadPs1File = (script: YouTubeScriptItem) => {
-    const element = document.createElement("a");
-    const file = new Blob([script.scriptCode], { type: 'text/plain' });
-    element.href = URL.createObjectURL(file);
-    element.download = script.ps1FileName;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+  const triggerDirectDownload = (script: YouTubeScriptItem) => {
+    const link = document.createElement('a');
+    link.href = script.scriptFilePath;
+    link.download = script.ps1FileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const copyScriptText = (id: string, text: string) => {
@@ -146,37 +170,18 @@ export const YouTubeScriptsVault: React.FC = () => {
             Descarga los Scripts de <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-purple-400 to-emerald-400">Nuestros Videos</span>
           </h2>
           <p className="text-slate-400 text-base sm:text-lg mt-4 font-normal">
-            Cada video de nuestro canal de YouTube tiene su script <code className="text-emerald-400 font-mono">.ps1</code> exclusivo. Comenta en el video en YouTube e ingresa tu usuario para verificar y desbloquear tu descarga en 1 segundo.
+            Cada video de nuestro canal tiene su script <code className="text-emerald-400 font-mono">.ps1</code> en <code className="text-purple-300 font-mono">public/scripts/</code>. Comenta en el video en YouTube e ingresa tu PIN único de 1 solo uso para desbloquear tu archivo.
           </p>
 
-          <div className="mt-4 flex justify-center">
-            <button
-              onClick={() => setShowApiKeyBox(!showApiKeyBox)}
-              className="text-xs font-mono text-slate-400 hover:text-purple-400 flex items-center gap-1.5 cursor-pointer underline"
-            >
-              <Key className="w-3.5 h-3.5" />
-              <span>{showApiKeyBox ? 'Ocultar Configuración de API Key' : 'Configurar YouTube Data API Key (Opcional)'}</span>
-            </button>
-          </div>
-
-          {/* Optional API Key Config Box */}
-          {showApiKeyBox && (
-            <div className="mt-4 max-w-md mx-auto p-4 rounded-2xl bg-slate-900 border border-purple-500/30 text-left text-xs font-mono space-y-2">
-              <label className="text-slate-300 font-bold block">
-                Google YouTube Data API v3 Key (Opcional):
-              </label>
-              <input
-                type="text"
-                value={apiKeyInput}
-                onChange={(e) => setApiKeyInput(e.target.value)}
-                placeholder="Pega tu API Key de Google Cloud aquí..."
-                className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-emerald-400"
-              />
-              <p className="text-[10px] text-slate-500">
-                Si configuras tu API Key gratuita de Google, la verificación de comentarios se consulta en tiempo real directo a YouTube v3 API.
-              </p>
+          <div className="mt-4 p-3 rounded-2xl bg-slate-900/80 border border-white/10 max-w-xl mx-auto text-xs font-mono text-slate-300 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <KeyRound className="w-4 h-4 text-emerald-400" />
+              <span>PINs Secuenciales: <strong className="text-white">Riv1, Riv2, Riv3 ... Riv1000</strong></span>
             </div>
-          )}
+            <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold uppercase">
+              1 Solo Uso (Anti-Impostor)
+            </span>
+          </div>
         </div>
 
         {/* Search Bar */}
@@ -184,7 +189,7 @@ export const YouTubeScriptsVault: React.FC = () => {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           <input
             type="text"
-            placeholder="Buscar por título del video de YouTube, vSphere 9.1, VCF Ops..."
+            placeholder="Buscar por título del video, vCenter 9.1, PowerCLI..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-slate-900/90 border border-white/10 text-white font-mono text-sm placeholder:text-slate-500 focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/20 shadow-xl"
@@ -230,23 +235,23 @@ export const YouTubeScriptsVault: React.FC = () => {
                             <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Script .ps1 Desbloqueado
                           </span>
                           <button
-                            onClick={() => copyScriptText(script.id, script.scriptCode)}
+                            onClick={() => copyScriptText(script.id, script.scriptCodeContent)}
                             className="text-[11px] font-bold text-purple-400 hover:text-white flex items-center gap-1"
                           >
                             {copiedScriptId === script.id ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                             <span>{copiedScriptId === script.id ? 'Copiado' : 'Copiar'}</span>
                           </button>
                         </div>
-                        <code className="block overflow-x-auto whitespace-pre leading-relaxed text-slate-200 max-h-32">
-                          {script.scriptCode}
+                        <code className="block overflow-x-auto whitespace-pre leading-relaxed text-slate-200 max-h-36">
+                          {script.scriptCodeContent}
                         </code>
                       </div>
                     ) : (
                       <div className="bg-slate-950/80 p-5 rounded-2xl border border-white/5 font-mono text-xs text-slate-400 flex flex-col items-center justify-center gap-2 text-center">
                         <Lock className="w-6 h-6 text-red-400 animate-pulse" />
-                        <span className="text-slate-300 font-bold">Script Bloqueado por Comentario</span>
+                        <span className="text-slate-300 font-bold">Script Protegido por PIN de 1 Solo Uso</span>
                         <p className="text-[11px] text-slate-500">
-                          Comenta <strong className="text-white">"script"</strong> en el video en YouTube e ingresa tu usuario para desbloquear.
+                          Comenta <strong className="text-white">"script"</strong> en el video de YouTube para recibir tu PIN personal.
                         </p>
                       </div>
                     )}
@@ -265,17 +270,22 @@ export const YouTubeScriptsVault: React.FC = () => {
 
                     {isUnlocked ? (
                       <button
-                        onClick={() => downloadPs1File(script)}
+                        onClick={() => triggerDirectDownload(script)}
                         className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(16,185,129,0.5)]"
                       >
                         <Download className="w-4 h-4" /> Descargar .ps1
                       </button>
                     ) : (
                       <button
-                        onClick={() => setActiveModalScript(script)}
+                        onClick={() => {
+                          setVerificationError(null);
+                          setUserHandleInput('');
+                          setPinInput('');
+                          setActiveModalScript(script);
+                        }}
                         className="px-4 py-2 rounded-xl bg-gradient-to-r from-red-600 to-purple-600 text-white font-mono text-xs font-bold hover:opacity-90 transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.4)]"
                       >
-                        <Unlock className="w-3.5 h-3.5" /> Desbloquear Script
+                        <Unlock className="w-3.5 h-3.5" /> Ingresar PIN y Desbloquear
                       </button>
                     )}
                   </div>
@@ -288,9 +298,9 @@ export const YouTubeScriptsVault: React.FC = () => {
 
       </div>
 
-      {/* Verification Modal for Selected YouTube Script */}
+      {/* PIN & Comment Verification Modal */}
       {activeModalScript && (
-        <div className="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[99999] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="relative w-full max-w-xl bg-slate-900 border border-red-500/40 rounded-3xl p-6 sm:p-8 shadow-[0_0_50px_rgba(239,68,68,0.3)] text-left font-mono">
             
             <button
@@ -306,7 +316,7 @@ export const YouTubeScriptsVault: React.FC = () => {
               </div>
               <div>
                 <span className="text-[10px] font-bold text-red-400 uppercase tracking-widest block">
-                  Verificación de Video YouTube
+                  Desbloqueo de Script de YouTube
                 </span>
                 <h3 className="text-base font-bold text-white leading-tight">
                   {activeModalScript.videoTitle}
@@ -315,44 +325,62 @@ export const YouTubeScriptsVault: React.FC = () => {
             </div>
 
             <p className="text-xs text-slate-300 mb-4 leading-relaxed">
-              Ingresa tu usuario de YouTube para verificar que comentaste en este video específico y desbloquear <strong className="text-emerald-400">{activeModalScript.ps1FileName}</strong>.
+              Ingresa tu usuario de YouTube y el PIN único de 1 solo uso que te respondió <strong className="text-red-400">@RiveritaTech</strong> en los comentarios.
             </p>
 
             <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-slate-950 border border-white/10 space-y-2">
-                <label className="text-xs font-bold text-slate-300 block">
-                  Tu Usuario de YouTube (ej: @carloscelestino889):
-                </label>
-                <input
-                  type="text"
-                  value={userHandle}
-                  onChange={(e) => setUserHandle(e.target.value)}
-                  placeholder="@usuario_de_youtube"
-                  className="w-full bg-slate-900 border border-red-500/40 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-400"
-                />
+              
+              <div className="p-4 rounded-2xl bg-slate-950 border border-white/10 space-y-3">
+                
+                <div>
+                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                    1. Tu Usuario de YouTube:
+                  </label>
+                  <input
+                    type="text"
+                    value={userHandleInput}
+                    onChange={(e) => setUserHandleInput(e.target.value)}
+                    placeholder="Ejemplo: @carloscelestino889"
+                    className="w-full bg-slate-900 border border-purple-500/40 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                    2. Tu PIN Único de 1 Solo Uso (ej: Riv1, Riv2):
+                  </label>
+                  <input
+                    type="text"
+                    value={pinInput}
+                    onChange={(e) => setPinInput(e.target.value)}
+                    placeholder="Ejemplo: Riv1"
+                    className="w-full bg-slate-900 border border-red-500/40 rounded-xl px-4 py-2.5 text-sm text-white font-bold tracking-widest focus:outline-none focus:border-emerald-400 uppercase"
+                  />
+                </div>
+
               </div>
 
               {verificationError && (
-                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-start gap-2">
+                  <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
                   <span>{verificationError}</span>
                 </div>
               )}
 
               <button
-                onClick={() => handleVerifyComment(activeModalScript)}
+                onClick={() => handleVerifyCommentAndPin(activeModalScript)}
                 disabled={isVerifying}
                 className="w-full py-3.5 rounded-xl bg-gradient-to-r from-red-600 via-purple-600 to-emerald-500 text-white font-bold text-sm tracking-wider uppercase shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isVerifying ? (
                   <>
                     <Sparkles className="w-4 h-4 animate-spin" />
-                    <span>Verificando Comentario en YouTube API...</span>
+                    <span>Verificando PIN y Quemando Código...</span>
                   </>
                 ) : (
                   <>
                     <Unlock className="w-4 h-4" />
-                    <span>Verificar Comentario y Desbloquear .ps1</span>
+                    <span>Validar PIN y Desbloquear .ps1</span>
                   </>
                 )}
               </button>
