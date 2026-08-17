@@ -22,11 +22,11 @@ const youtubeScriptsData: YouTubeScriptItem[] = [
     scriptFilePath: '/scripts/02-Ver-VMs-Filtrar-Estado.ps1',
   },
   {
-    id: 'yt-vmware-powercli-auto',
-    videoTitle: 'Script VMware PowerCLI - Automatización vSphere ⚡',
+    id: 'yt-vcenter-91-connect',
+    videoTitle: 'Cómo conectarse a vCenter 9.1 con PowerCLI 🚀',
     videoId: 'DIPPvQ34v8w',
     youtubeUrl: 'https://www.youtube.com/watch?v=DIPPvQ34v8w',
-    ps1FileName: '01-Listar-VMs-vCenter.ps1',
+    ps1FileName: '02-Ver-VMs-Filtrar-Estado.ps1',
     scriptFilePath: '/scripts/02-Ver-VMs-Filtrar-Estado.ps1',
   }
 ];
@@ -222,7 +222,7 @@ export const YouTubeScriptsVault: React.FC = () => {
 
                   <div className="space-y-5">
                     
-                    {/* ONLY THE VIDEO TITLE */}
+                    {/* ONLY THE EXACT VIDEO TITLE */}
                     <h3 className="text-xl sm:text-2xl font-bold text-white group-hover:text-red-300 transition-colors leading-snug">
                       {script.videoTitle}
                     </h3>
