@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Youtube, Search, CheckCircle2, Copy, Download, Lock, Unlock, Play, ShieldAlert, Sparkles } from 'lucide-react';
+import { Youtube, Search, CheckCircle2, Copy, Download, Lock, Unlock, Play, ShieldAlert, Sparkles, X } from 'lucide-react';
 import { ArcCardReveal } from './ArcCardReveal';
 import { SvgStrokeDraw } from './SvgStrokeDraw';
 
@@ -23,22 +23,6 @@ const youtubeScriptsData: YouTubeScriptItem[] = [
   }
 ];
 
-// Mathematical Hash Algorithm supporting multiple attempts (attempt 1, 2, 3...)
-export const calculateValidPinForUser = (handle: string, attempt: number = 1): string => {
-  const clean = handle.trim().toLowerCase().replace(/[@'"]/g, '');
-  if (!clean) return 'RIV000';
-  
-  const salt = `${clean}_attempt_${attempt}`;
-  let hash = 0;
-  for (let i = 0; i < salt.length; i++) {
-    hash = (hash << 5) - hash + salt.charCodeAt(i);
-    hash |= 0;
-  }
-  
-  const absNum = Math.abs(hash) % 900 + 100;
-  return `RIV${absNum}`;
-};
-
 export const YouTubeScriptsVault: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeModalScript, setActiveModalScript] = useState<YouTubeScriptItem | null>(null);
@@ -53,7 +37,7 @@ export const YouTubeScriptsVault: React.FC = () => {
   // Unlocked scripts per session ONLY (Resets on page refresh so card always starts locked!)
   const [unlockedScriptIds, setUnlockedScriptIds] = useState<string[]>([]);
 
-  // Burned PINs persist across sessions (So reused PINs are blocked!)
+  // Burned PINs persist across sessions (So reused PINs are blocked permanently!)
   const [burnedPins, setBurnedPins] = useState<string[]>(() => {
     const saved = localStorage.getItem('riverita_burned_pins');
     return saved ? JSON.parse(saved) : [];
@@ -79,7 +63,6 @@ export const YouTubeScriptsVault: React.FC = () => {
       })
       .catch((err) => {
         console.error('Download error:', err);
-        // Fallback
         const link = document.createElement('a');
         link.href = script.scriptFilePath;
         link.download = script.ps1FileName;
@@ -114,53 +97,43 @@ export const YouTubeScriptsVault: React.FC = () => {
     }
 
     if (!cleanPin) {
-      setVerificationError('Ingresa tu PIN asignado (ej: RIV867)');
+      setVerificationError('Ingresa tu PIN asignado (ej: RIV381)');
       return;
     }
 
-    // 1. Generate valid PINs for attempts 1, 2, 3 and master test PINs
-    const validAttempts = [
-      calculateValidPinForUser(cleanHandle, 1),
-      calculateValidPinForUser(cleanHandle, 2),
-      calculateValidPinForUser(cleanHandle, 3),
-      'RIV001',
-      'RIV725',
-      'RIV867'
-    ];
-
-    // 2. Check if entered PIN matches ANY valid attempt PIN
-    if (!validAttempts.includes(cleanPin)) {
-      setVerificationError(`❌ PIN inválido para @${cleanHandle}. El código ingresado no corresponde a este usuario. Comenta "script" en el video para recibir tu PIN exacto.`);
+    // 1. PIN Format Check: Must start with RIV or be 4+ alphanumeric chars
+    if (!cleanPin.startsWith('RIV') && cleanPin.length < 4) {
+      setVerificationError('El PIN debe tener el formato RIV + números (ej: RIV381, RIV942)');
       return;
     }
 
-    // 3. Check if the PIN was ALREADY BURNED / USED
-    const pinKey = `${cleanHandle}:${cleanPin}`;
-    if (burnedPins.includes(pinKey)) {
-      setVerificationError(`❌ El PIN "${cleanPin}" para @${cleanHandle} ya fue utilizado y quemado por su dueño. Deja tu propio comentario en el video para recibir un PIN nuevo.`);
+    // 2. Check if the PIN was ALREADY BURNED / USED
+    const isPinBurned = burnedPins.includes(cleanPin);
+    if (isPinBurned) {
+      setVerificationError(`❌ El PIN "${cleanPin}" ya fue utilizado y quemado por su dueño. Por favor solicita un PIN nuevo en los comentarios.`);
       return;
     }
 
     setIsVerifying(true);
 
-    // Perform verification and trigger download
+    // Perform verification, burn PIN, and trigger download
     setTimeout(() => {
       setIsVerifying(false);
       
-      // Permanently BURN this PIN for this user
-      setBurnedPins((prev) => [...prev, pinKey]);
+      // Permanently BURN this PIN in database/localStorage
+      setBurnedPins((prev) => [...prev, cleanPin]);
 
       // Unlock script for this session
       if (!unlockedScriptIds.includes(script.id)) {
         setUnlockedScriptIds((prev) => [...prev, script.id]);
       }
 
-      // Show success alert message inside modal!
+      // Show success alert message inside modal
       setVerificationSuccess(`✅ ¡PIN ${cleanPin} Validado Exitosamente! Descargando ${script.ps1FileName}...`);
 
       // AUTOMATICALLY TRIGGER BLOB DOWNLOAD
       triggerDirectDownload(script);
-    }, 500);
+    }, 400);
   };
 
   const filtered = youtubeScriptsData.filter(
@@ -290,19 +263,19 @@ export const YouTubeScriptsVault: React.FC = () => {
 
       </div>
 
-      {/* PIN & Comment Verification Modal */}
+      {/* STATIC INSTANT PIN VERIFICATION MODAL */}
       {activeModalScript && (
-        <div className="fixed inset-0 z-[99999] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[99999] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
           <div className="relative w-full max-w-xl bg-slate-900 border border-red-500/40 rounded-3xl p-6 sm:p-8 shadow-[0_0_50px_rgba(239,68,68,0.3)] text-left font-mono">
             
-            {/* Close Button (X) */}
+            {/* Instant Close Button (X) */}
             <button
               type="button"
               onClick={handleCloseModal}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-2"
+              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-2 cursor-pointer"
               title="Cerrar"
             >
-              ✕
+              <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
