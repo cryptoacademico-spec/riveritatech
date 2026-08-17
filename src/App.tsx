@@ -20,6 +20,14 @@ export function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
 
+  // Read URL Path on initial page load (Support direct URL access like /youtube-scripts)
+  useEffect(() => {
+    const rawPath = window.location.pathname.toLowerCase().replace(/^\/+|\/+$/g, '');
+    if (rawPath === 'youtube-scripts') {
+      setCurrentPage('youtube-scripts');
+    }
+  }, []);
+
   // TRIONN SHARED SCROLL DRIVER ENGINE STATES (0.0 to 1.0)
   const [normalizedScroll, setNormalizedScroll] = useState(0);
   const targetScrollRef = useRef(0);
