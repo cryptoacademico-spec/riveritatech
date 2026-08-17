@@ -26,8 +26,8 @@ const youtubeScriptsData: YouTubeScriptItem[] = [
     videoTitle: 'Cómo conectarse a vCenter 9.1 con PowerCLI 🚀',
     videoId: 'DIPPvQ34v8w',
     youtubeUrl: 'https://www.youtube.com/watch?v=DIPPvQ34v8w',
-    ps1FileName: '02-Ver-VMs-Filtrar-Estado.ps1',
-    scriptFilePath: '/scripts/02-Ver-VMs-Filtrar-Estado.ps1',
+    ps1FileName: '01-Conectarse-a-vCenter.ps1',
+    scriptFilePath: '/scripts/01-Conectarse-a-vCenter.ps1',
   }
 ];
 
