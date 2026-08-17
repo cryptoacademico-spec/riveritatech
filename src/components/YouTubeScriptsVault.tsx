@@ -63,13 +63,31 @@ export const YouTubeScriptsVault: React.FC = () => {
     localStorage.setItem('riverita_burned_pins', JSON.stringify(burnedPins));
   }, [burnedPins]);
 
+  // Robust Blob Download Trigger (Guarantees zero page reload or SPA routing jump)
   const triggerDirectDownload = (script: YouTubeScriptItem) => {
-    const link = document.createElement('a');
-    link.href = script.scriptFilePath;
-    link.download = script.ps1FileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    fetch(script.scriptFilePath)
+      .then((res) => res.blob())
+      .then((blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = script.ps1FileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      })
+      .catch((err) => {
+        console.error('Download error:', err);
+        // Fallback
+        const link = document.createElement('a');
+        link.href = script.scriptFilePath;
+        link.download = script.ps1FileName;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
   };
 
   const handleCloseModal = () => {
@@ -82,6 +100,7 @@ export const YouTubeScriptsVault: React.FC = () => {
 
   const handleVerifyCommentAndPin = (e: React.FormEvent, script: YouTubeScriptItem) => {
     e.preventDefault();
+    e.stopPropagation();
     setVerificationError(null);
     setVerificationSuccess(null);
 
@@ -95,17 +114,18 @@ export const YouTubeScriptsVault: React.FC = () => {
     }
 
     if (!cleanPin) {
-      setVerificationError('Ingresa tu PIN asignado (ej: RIV725)');
+      setVerificationError('Ingresa tu PIN asignado (ej: RIV867)');
       return;
     }
 
-    // 1. Generate valid PINs for attempt 1, 2, and 3 for this user handle
+    // 1. Generate valid PINs for attempts 1, 2, 3 and master test PINs
     const validAttempts = [
       calculateValidPinForUser(cleanHandle, 1),
       calculateValidPinForUser(cleanHandle, 2),
       calculateValidPinForUser(cleanHandle, 3),
       'RIV001',
-      'RIV725'
+      'RIV725',
+      'RIV867'
     ];
 
     // 2. Check if entered PIN matches ANY valid attempt PIN
@@ -136,11 +156,11 @@ export const YouTubeScriptsVault: React.FC = () => {
       }
 
       // Show success alert message inside modal!
-      setVerificationSuccess(`✅ ¡PIN ${cleanPin} Validado Exitosamente para @${cleanHandle}! Descargando ${script.ps1FileName}...`);
+      setVerificationSuccess(`✅ ¡PIN ${cleanPin} Validado Exitosamente! Descargando ${script.ps1FileName}...`);
 
-      // AUTOMATICALLY TRIGGER DOWNLOAD
+      // AUTOMATICALLY TRIGGER BLOB DOWNLOAD
       triggerDirectDownload(script);
-    }, 600);
+    }, 500);
   };
 
   const filtered = youtubeScriptsData.filter(
@@ -239,6 +259,7 @@ export const YouTubeScriptsVault: React.FC = () => {
 
                     {isUnlocked ? (
                       <button
+                        type="button"
                         onClick={() => triggerDirectDownload(script)}
                         className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(16,185,129,0.5)]"
                       >
@@ -246,6 +267,7 @@ export const YouTubeScriptsVault: React.FC = () => {
                       </button>
                     ) : (
                       <button
+                        type="button"
                         onClick={() => {
                           setVerificationError(null);
                           setVerificationSuccess(null);
