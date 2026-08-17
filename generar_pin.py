@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys
 import json
 import os
@@ -22,8 +23,8 @@ def save_history(history):
 
 # Catalog of YouTube Videos
 VIDEOS = {
-    "1": {"id": "AzdTR59DhD0", "title": "Cómo listar y filtrar VMs en vCenter 9.1 con PowerCLI 🚀"},
-    "2": {"id": "DIPPvQ34v8w", "title": "Cómo conectarse a vCenter 9.1 con PowerCLI 🚀"}
+    "1": {"id": "AzdTR59DhD0", "title": "Como listar y filtrar VMs en vCenter 9.1 con PowerCLI"},
+    "2": {"id": "DIPPvQ34v8w", "title": "Como conectarse a vCenter 9.1 con PowerCLI"}
 }
 
 def calculate_pin_for_attempt(handle, video_id, attempt):
@@ -37,7 +38,6 @@ def calculate_pin_for_attempt(handle, video_id, attempt):
         hash_val = ((hash_val << 5) - hash_val) + ord(char)
         hash_val &= 0xFFFFFFFF
     
-    # 32-bit signed integer conversion
     if hash_val & 0x80000000:
         hash_val = -((~hash_val + 1) & 0xFFFFFFFF)
         
@@ -46,23 +46,31 @@ def calculate_pin_for_attempt(handle, video_id, attempt):
 
 if __name__ == "__main__":
     print("\n==========================================================")
-    print(" 📹 SELECCIONA EL VIDEO DE YOUTUBE:")
-    print(" 1. Cómo listar y filtrar VMs en vCenter 9.1 con PowerCLI 🚀")
-    print(" 2. Cómo conectarse a vCenter 9.1 con PowerCLI 🚀")
+    print(" SELECCIONA EL VIDEO DE YOUTUBE:")
+    print(" 1. Como listar y filtrar VMs en vCenter 9.1 con PowerCLI")
+    print(" 2. Como conectarse a vCenter 9.1 con PowerCLI")
     print("==========================================================")
     
-    v_option = input("Elige la opción del video (1 o 2, por defecto 1): ").strip()
+    try:
+        v_option = input("Elige la opcion del video (1 o 2, por defecto 1): ").strip()
+    except Exception:
+        v_option = "1"
+        
     if v_option not in VIDEOS:
         v_option = "1"
         
     video_info = VIDEOS[v_option]
     video_id = video_info["id"]
     
-    user = input("\nIngresa el usuario de YouTube (ej: @carloscelestino889): ").strip()
+    try:
+        user = input("\nIngresa el usuario de YouTube (ej: @riveritatech): ").strip()
+    except Exception:
+        user = "@riveritatech"
+        
     clean_user = user.lower().replace('@', '').replace("'", "").replace('"', '')
     
     if not clean_user:
-        print("❌ Usuario inválido.")
+        print("x Usuario invalido.")
         sys.exit(1)
         
     history = load_history()
@@ -70,10 +78,13 @@ if __name__ == "__main__":
     current_count = history.get(user_key, 0) + 1
     
     if current_count > 3:
-        print(f"\n⚠️ ATENCIÓN: Ya has generado {current_count - 1} PINs (máximo recomendado de 3) para {user} en este video.")
-        override = input("¿Deseas generar un nuevo PIN de todas formas? (s/n): ").strip().lower()
+        print(f"\n[!] ATENCION: Ya has generado {current_count - 1} PINs (maximo recomendado) para {user} en este video.")
+        try:
+            override = input("Deseas generar un nuevo PIN de todas formas? (s/n): ").strip().lower()
+        except Exception:
+            override = "s"
         if override != 's':
-            print("Operación cancelada.")
+            print("Operacion cancelada.")
             sys.exit(0)
             
     history[user_key] = current_count
@@ -82,7 +93,7 @@ if __name__ == "__main__":
     pin = calculate_pin_for_attempt(clean_user, video_id, current_count)
     
     print("\n==========================================================")
-    print(f" 🎬 VIDEO: {video_info['title']}")
-    print(f" 🔑 PIN AUTOMÁTICO NUEVO (PIN #{current_count}) PARA {user.upper()}:  {pin}")
+    print(f" VIDEO: {video_info['title']}")
+    print(f" PIN AUTOMATICO NUEVO (PIN #{current_count}) PARA {user.upper()}:  {pin}")
     print("==========================================================")
-    print(f"Responde en YouTube: Tu PIN único de descarga es: {pin}\n")
+    print(f"Responde en YouTube: Tu PIN unico de descarga es: {pin}\n")
