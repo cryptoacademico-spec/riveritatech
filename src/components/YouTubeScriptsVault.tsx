@@ -23,19 +23,19 @@ const youtubeScriptsData: YouTubeScriptItem[] = [
   }
 ];
 
-// Mathematical Hash Algorithm matching Diego's local generar_pin.py script
-export const calculateValidPinForUser = (handle: string): string => {
-  // Strip @, quotes, spaces, lowercase
+// Mathematical Hash Algorithm supporting multiple attempts (attempt 1, 2, 3...)
+export const calculateValidPinForUser = (handle: string, attempt: number = 1): string => {
   const clean = handle.trim().toLowerCase().replace(/[@'"]/g, '');
   if (!clean) return 'RIV000';
   
+  const salt = `${clean}_attempt_${attempt}`;
   let hash = 0;
-  for (let i = 0; i < clean.length; i++) {
-    hash = (hash << 5) - hash + clean.charCodeAt(i);
+  for (let i = 0; i < salt.length; i++) {
+    hash = (hash << 5) - hash + salt.charCodeAt(i);
     hash |= 0;
   }
   
-  const absNum = Math.abs(hash) % 900 + 100; // Produces 3 digits between 100 and 999
+  const absNum = Math.abs(hash) % 900 + 100;
   return `RIV${absNum}`;
 };
 
@@ -80,13 +80,13 @@ export const YouTubeScriptsVault: React.FC = () => {
     setActiveModalScript(null);
   };
 
-  const handleVerifyCommentAndPin = (script: YouTubeScriptItem) => {
+  const handleVerifyCommentAndPin = (e: React.FormEvent, script: YouTubeScriptItem) => {
+    e.preventDefault();
     setVerificationError(null);
     setVerificationSuccess(null);
 
-    // Normalize handle: remove @ and quotes so @carloscelestino889 and carloscelestino889 behave identically
+    // Normalize handle & PIN
     const cleanHandle = userHandleInput.trim().toLowerCase().replace(/[@'"]/g, '');
-    // Clean PIN: uppercase, alphanumeric only
     const cleanPin = pinInput.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
 
     if (!cleanHandle) {
@@ -99,11 +99,17 @@ export const YouTubeScriptsVault: React.FC = () => {
       return;
     }
 
-    // 1. Calculate expected valid PIN for this handle
-    const expectedValidPin = calculateValidPinForUser(cleanHandle);
+    // 1. Generate valid PINs for attempt 1, 2, and 3 for this user handle
+    const validAttempts = [
+      calculateValidPinForUser(cleanHandle, 1),
+      calculateValidPinForUser(cleanHandle, 2),
+      calculateValidPinForUser(cleanHandle, 3),
+      'RIV001',
+      'RIV725'
+    ];
 
-    // 2. Check if PIN matches expected PIN (or master test PINs RIV725 / RIV001)
-    if (cleanPin !== expectedValidPin && cleanPin !== 'RIV001' && cleanPin !== 'RIV725') {
+    // 2. Check if entered PIN matches ANY valid attempt PIN
+    if (!validAttempts.includes(cleanPin)) {
       setVerificationError(`❌ PIN inválido para @${cleanHandle}. El código ingresado no corresponde a este usuario. Comenta "script" en el video para recibir tu PIN exacto.`);
       return;
     }
@@ -269,6 +275,7 @@ export const YouTubeScriptsVault: React.FC = () => {
             
             {/* Close Button (X) */}
             <button
+              type="button"
               onClick={handleCloseModal}
               className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-2"
               title="Cerrar"
@@ -294,7 +301,7 @@ export const YouTubeScriptsVault: React.FC = () => {
               Ingresa tu usuario de YouTube y el PIN único de 1 solo uso que te respondió <strong className="text-red-400">@RiveritaTech</strong> en los comentarios.
             </p>
 
-            <div className="space-y-4">
+            <form onSubmit={(e) => handleVerifyCommentAndPin(e, activeModalScript)} className="space-y-4">
               
               <div className="p-4 rounded-2xl bg-slate-950 border border-white/10 space-y-3">
                 
@@ -343,7 +350,7 @@ export const YouTubeScriptsVault: React.FC = () => {
               )}
 
               <button
-                onClick={() => handleVerifyCommentAndPin(activeModalScript)}
+                type="submit"
                 disabled={isVerifying}
                 className="w-full py-3.5 rounded-xl bg-gradient-to-r from-red-600 via-purple-600 to-emerald-500 text-white font-bold text-sm tracking-wider uppercase shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
@@ -359,7 +366,7 @@ export const YouTubeScriptsVault: React.FC = () => {
                   </>
                 )}
               </button>
-            </div>
+            </form>
 
           </div>
         </div>

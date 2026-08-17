@@ -1,13 +1,13 @@
 import sys
 
-def calculate_valid_pin(handle):
-    # Sanitize handle: strip whitespace, quotes, lowercase, remove @
+def calculate_valid_pin(handle, attempt=1):
     clean = handle.strip().lower().replace('@', '').replace("'", "").replace('"', '')
     if not clean:
         return 'RIV000'
     
+    salt = f"{clean}_attempt_{attempt}"
     hash_val = 0
-    for char in clean:
+    for char in salt:
         hash_val = ((hash_val << 5) - hash_val) + ord(char)
         hash_val &= 0xFFFFFFFF
     
@@ -19,13 +19,13 @@ def calculate_valid_pin(handle):
     return f"RIV{abs_num}"
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        user = sys.argv[1]
-    else:
-        user = input("Ingresa el usuario de YouTube (ej: @carloscelestino889): ")
+    user = sys.argv[1] if len(sys.argv) > 1 else input("Ingresa el usuario de YouTube (ej: @carloscelestino889): ")
+    attempt = int(sys.argv[2]) if len(sys.argv) > 2 else 1
     
-    pin = calculate_valid_pin(user)
+    pin = calculate_valid_pin(user, attempt)
     print("\n==========================================================")
-    print(f" 🔑 PIN PRIVADO PARA {user.upper()}:  {pin}")
+    print(f" 🔑 PIN PRIVADO PARA {user.upper()} (Intento #{attempt}):  {pin}")
     print("==========================================================")
-    print(f"Responde en YouTube: Tu PIN único de descarga es: {pin}\n")
+    print(f"Responde en YouTube: Tu PIN único de descarga es: {pin}")
+    print("Nota: Si necesitas un 2do PIN para el mismo usuario, ejecuta:")
+    print(f"      python generar_pin.py {user} 2\n")
