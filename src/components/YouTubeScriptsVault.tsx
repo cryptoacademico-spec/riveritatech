@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Youtube, Search, Code, CheckCircle2, Copy, Download, Lock, Unlock, Play, ShieldAlert, Sparkles, AlertCircle, KeyRound, HelpCircle } from 'lucide-react';
+import { Youtube, Search, Code, CheckCircle2, Copy, Download, Lock, Unlock, Play, ShieldAlert, Sparkles, KeyRound } from 'lucide-react';
 import { ArcCardReveal } from './ArcCardReveal';
 import { SvgStrokeDraw } from './SvgStrokeDraw';
 
@@ -58,13 +58,13 @@ export const YouTubeScriptsVault: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeModalScript, setActiveModalScript] = useState<YouTubeScriptItem | null>(null);
   
-  // Verification form states
+  // Generic Verification form states
   const [userHandleInput, setUserHandleInput] = useState('');
   const [pinInput, setPinInput] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
   
-  // Unlocked scripts and used PINs persistence
+  // Unlocked scripts and burned PINs persistence
   const [unlockedScriptIds, setUnlockedScriptIds] = useState<string[]>(() => {
     const saved = localStorage.getItem('riverita_unlocked_scripts');
     return saved ? JSON.parse(saved) : [];
@@ -72,7 +72,7 @@ export const YouTubeScriptsVault: React.FC = () => {
 
   const [usedPins, setUsedPins] = useState<string[]>(() => {
     const saved = localStorage.getItem('riverita_used_pins');
-    return saved ? JSON.parse(saved) : ['Riv0'];
+    return saved ? JSON.parse(saved) : ['RIV000'];
   });
 
   const [copiedScriptId, setCopiedScriptId] = useState<string | null>(null);
@@ -88,21 +88,26 @@ export const YouTubeScriptsVault: React.FC = () => {
   const handleVerifyCommentAndPin = (script: YouTubeScriptItem) => {
     setVerificationError(null);
     const cleanHandle = userHandleInput.trim().toLowerCase();
-    const cleanPin = pinInput.trim();
+    const cleanPin = pinInput.trim().toUpperCase();
 
     if (!cleanHandle) {
-      setVerificationError('Ingresa tu usuario de YouTube (ej: @carloscelestino889)');
+      setVerificationError('Ingresa tu usuario de YouTube (ej: @tu_usuario_youtube)');
       return;
     }
 
     if (!cleanPin) {
-      setVerificationError('Ingresa el PIN de 4 caracteres (ej: Riv1, Riv2)');
+      setVerificationError('Ingresa el PIN de acceso (ej: RIV001, RIV102)');
+      return;
+    }
+
+    // Validate PIN Format starts with RIV or is 4+ characters
+    if (!cleanPin.startsWith('RIV') && cleanPin.length < 4) {
+      setVerificationError('El PIN debe tener formato RIV + 3 números (ej: RIV001, RIV552)');
       return;
     }
 
     // Check if the PIN was ALREADY USED & KILLED by someone else
-    const normalizedPin = cleanPin.toUpperCase();
-    const isPinBurned = usedPins.some((p) => p.toUpperCase() === normalizedPin);
+    const isPinBurned = usedPins.some((p) => p.toUpperCase() === cleanPin);
 
     if (isPinBurned) {
       setVerificationError(`❌ El PIN "${cleanPin}" ya fue utilizado y quemado por su dueño. Deja tu propio comentario en el video para recibir un PIN único nuevo.`);
@@ -111,7 +116,7 @@ export const YouTubeScriptsVault: React.FC = () => {
 
     setIsVerifying(true);
 
-    // Simulate verification & PIN redemption
+    // Simulate PIN redemption and burning
     setTimeout(() => {
       setIsVerifying(false);
       
@@ -176,7 +181,7 @@ export const YouTubeScriptsVault: React.FC = () => {
           <div className="mt-4 p-3 rounded-2xl bg-slate-900/80 border border-white/10 max-w-xl mx-auto text-xs font-mono text-slate-300 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <KeyRound className="w-4 h-4 text-emerald-400" />
-              <span>PINs Secuenciales: <strong className="text-white">Riv1, Riv2, Riv3 ... Riv1000</strong></span>
+              <span>Formato de PINs: <strong className="text-white">RIV + 3 números (ej: RIV001, RIV002, RIV105)</strong></span>
             </div>
             <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold uppercase">
               1 Solo Uso (Anti-Impostor)
@@ -340,20 +345,20 @@ export const YouTubeScriptsVault: React.FC = () => {
                     type="text"
                     value={userHandleInput}
                     onChange={(e) => setUserHandleInput(e.target.value)}
-                    placeholder="Ejemplo: @carloscelestino889"
+                    placeholder="Ejemplo: @tu_usuario_youtube"
                     className="w-full bg-slate-900 border border-purple-500/40 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-400"
                   />
                 </div>
 
                 <div>
                   <label className="text-xs font-bold text-slate-300 block mb-1">
-                    2. Tu PIN Único de 1 Solo Uso (ej: Riv1, Riv2):
+                    2. Tu PIN Único de 1 Solo Uso (ej: RIV001, RIV002):
                   </label>
                   <input
                     type="text"
                     value={pinInput}
                     onChange={(e) => setPinInput(e.target.value)}
-                    placeholder="Ejemplo: Riv1"
+                    placeholder="Ejemplo: RIV001"
                     className="w-full bg-slate-900 border border-red-500/40 rounded-xl px-4 py-2.5 text-sm text-white font-bold tracking-widest focus:outline-none focus:border-emerald-400 uppercase"
                   />
                 </div>
@@ -375,7 +380,7 @@ export const YouTubeScriptsVault: React.FC = () => {
                 {isVerifying ? (
                   <>
                     <Sparkles className="w-4 h-4 animate-spin" />
-                    <span>Verificando PIN y Quemando Código...</span>
+                    <span>Validando PIN y Quemando Código...</span>
                   </>
                 ) : (
                   <>
