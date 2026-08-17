@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Terminal, Copy, CheckCircle2, Search, Code, ShieldCheck, Play } from 'lucide-react';
+import { Terminal, Copy, CheckCircle2, Search, Code, ShieldCheck, Play, Youtube, Lock } from 'lucide-react';
 import { ArcCardReveal } from './ArcCardReveal';
 import { SvgStrokeDraw } from './SvgStrokeDraw';
+import { YouTubeCommentVerifierModal } from './YouTubeCommentVerifierModal';
 
 interface ScriptItem {
   id: string;
@@ -14,8 +15,8 @@ interface ScriptItem {
 const practicalScripts: ScriptItem[] = [
   {
     id: 'sc-1',
-    title: 'Consultar Estado de Máquinas Virtuales (VMs) en vCenter',
-    category: 'vSphere & ESXi',
+    title: 'Consultar Estado de Máquinas Virtuales (VMs) en vCenter 9.1',
+    category: 'vSphere & ESXi 9.1',
     description: 'Obtén un listado rápido con nombre de VM, estado de encendido, RAM asignada y dirección IP.',
     command: 'Get-VM | Select-Object Name, PowerState, MemoryGB, NumCpu, @{N="IP";E={$_.Guest.IPAddress[0]}} | Format-Table -AutoSize',
   },
@@ -23,12 +24,12 @@ const practicalScripts: ScriptItem[] = [
     id: 'sc-2',
     title: 'Detectar y Listar Snapshots Huérfanos (> 72 Horas)',
     category: 'Mantenimiento & Storage',
-    description: 'Encuentra snapshots antiguos que consumen espacio en Datastore y pon en riesgo el rendimiento.',
+    description: 'Encuentra snapshots antiguos que consumen espacio en Datastore y ponen en riesgo el rendimiento.',
     command: 'Get-VM | Get-Snapshot | Where-Object {$_.Created -lt (Get-Date).AddDays(-3)} | Select-Object VM, Name, Created, SizeGB | Format-Table -AutoSize',
   },
   {
     id: 'sc-3',
-    title: 'Verificar Espacio Libre y Uso de Datastores',
+    title: 'Verificar Espacio Libre y Uso de Datastores vSAN',
     category: 'Storage vSAN & SAN',
     description: 'Revisa el almacenamiento total, libre y porcentaje de ocupación en todos los Datastores de vCenter.',
     command: 'Get-Datastore | Select-Object Name, CapacityGB, FreeSpaceGB, @{N="FreePercent";E={[math]::Round(($_.FreeSpaceGB / $_.CapacityGB)*100, 2)}} | Format-Table -AutoSize',
@@ -59,11 +60,18 @@ const practicalScripts: ScriptItem[] = [
 export const ScriptsSection: React.FC = () => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isVerifierOpen, setIsVerifierOpen] = useState(false);
+  const [selectedScriptTitle, setSelectedScriptTitle] = useState('');
 
   const copyToClipboard = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const openVerifierForScript = (title: string) => {
+    setSelectedScriptTitle(title);
+    setIsVerifierOpen(true);
   };
 
   const filteredScripts = practicalScripts.filter(
@@ -93,7 +101,7 @@ export const ScriptsSection: React.FC = () => {
             Consultas Prácticas para <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-emerald-400 to-teal-300">Administradores VMware</span>
           </h2>
           <p className="text-slate-400 text-base sm:text-lg mt-4 font-normal">
-            Scripts y comandos reales de PowerCLI para automatizar vCenter, vSphere y vSAN en tu día a día. Copia e ingresa directamente en tu consola.
+            Scripts y comandos reales de PowerCLI para automatizar vCenter, vSphere y vSAN en tu día a día. Copia u obtén la descarga del script oficial verificando tu comentario de YouTube.
           </p>
         </div>
 
@@ -171,16 +179,21 @@ export const ScriptsSection: React.FC = () => {
 
                 </div>
 
-                {/* Action Button */}
-                <div className="pt-6 mt-6 border-t border-white/5 flex justify-between items-center">
-                  <span className="text-[11px] font-mono text-slate-400 flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400" /> Listo para Ejecutar
-                  </span>
+                {/* Action Buttons: Copy Cmdlet & Unlock YouTube Script */}
+                <div className="pt-6 mt-6 border-t border-white/5 flex flex-wrap justify-between items-center gap-3">
                   <button
                     onClick={() => copyToClipboard(script.id, script.command)}
-                    className="px-4 py-2 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 font-mono text-xs font-bold hover:bg-purple-500/20 transition-all flex items-center gap-2"
+                    className="px-3.5 py-2 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 font-mono text-xs font-bold hover:bg-purple-500/20 transition-all flex items-center gap-1.5"
                   >
-                    <Play className="w-3 h-3 text-emerald-400 fill-emerald-400" /> Copiar Comando
+                    <Play className="w-3 h-3 text-emerald-400 fill-emerald-400" /> Copiar Cmdlet
+                  </button>
+
+                  <button
+                    onClick={() => openVerifierForScript(script.title)}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-red-600/20 to-purple-600/20 border border-red-500/40 text-red-400 font-mono text-xs font-bold hover:border-red-400 transition-all flex items-center gap-2"
+                  >
+                    <Youtube className="w-4 h-4 text-red-500" />
+                    <span>Desbloquear .ps1</span>
                   </button>
                 </div>
 
@@ -190,6 +203,14 @@ export const ScriptsSection: React.FC = () => {
         </div>
 
       </div>
+
+      {/* YouTube Comment Verifier Modal */}
+      <YouTubeCommentVerifierModal
+        isOpen={isVerifierOpen}
+        onClose={() => setIsVerifierOpen(false)}
+        scriptTitle={selectedScriptTitle}
+      />
+
     </section>
   );
 };
