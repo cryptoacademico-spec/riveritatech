@@ -25,7 +25,8 @@ const youtubeScriptsData: YouTubeScriptItem[] = [
 
 // Mathematical Hash Algorithm matching Diego's local generar_pin.py script
 export const calculateValidPinForUser = (handle: string): string => {
-  const clean = handle.trim().toLowerCase().replace('@', '').replace(/['"]/g, '');
+  // Strip @, quotes, spaces, lowercase
+  const clean = handle.trim().toLowerCase().replace(/[@'"]/g, '');
   if (!clean) return 'RIV000';
   
   let hash = 0;
@@ -47,6 +48,7 @@ export const YouTubeScriptsVault: React.FC = () => {
   const [pinInput, setPinInput] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [verificationSuccess, setVerificationSuccess] = useState<string | null>(null);
 
   // Unlocked scripts per session ONLY (Resets on page refresh so card always starts locked!)
   const [unlockedScriptIds, setUnlockedScriptIds] = useState<string[]>([]);
@@ -72,6 +74,7 @@ export const YouTubeScriptsVault: React.FC = () => {
 
   const handleCloseModal = () => {
     setVerificationError(null);
+    setVerificationSuccess(null);
     setUserHandleInput('');
     setPinInput('');
     setActiveModalScript(null);
@@ -79,8 +82,11 @@ export const YouTubeScriptsVault: React.FC = () => {
 
   const handleVerifyCommentAndPin = (script: YouTubeScriptItem) => {
     setVerificationError(null);
-    const cleanHandle = userHandleInput.trim().toLowerCase().replace(/['"]/g, '');
-    // Strip trailing quotes or symbols
+    setVerificationSuccess(null);
+
+    // Normalize handle: remove @ and quotes so @carloscelestino889 and carloscelestino889 behave identically
+    const cleanHandle = userHandleInput.trim().toLowerCase().replace(/[@'"]/g, '');
+    // Clean PIN: uppercase, alphanumeric only
     const cleanPin = pinInput.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
 
     if (!cleanHandle) {
@@ -93,25 +99,25 @@ export const YouTubeScriptsVault: React.FC = () => {
       return;
     }
 
-    // 1. Calculate the EXACT valid PIN required for this user handle matching Diego's local script
+    // 1. Calculate expected valid PIN for this handle
     const expectedValidPin = calculateValidPinForUser(cleanHandle);
 
-    // 2. Check if the entered PIN matches the expected PIN
+    // 2. Check if PIN matches expected PIN (or master test PINs RIV725 / RIV001)
     if (cleanPin !== expectedValidPin && cleanPin !== 'RIV001' && cleanPin !== 'RIV725') {
-      setVerificationError(`❌ PIN inválido para ${cleanHandle}. El código ingresado no corresponde a este usuario. Comenta "script" en el video para recibir tu PIN exacto.`);
+      setVerificationError(`❌ PIN inválido para @${cleanHandle}. El código ingresado no corresponde a este usuario. Comenta "script" en el video para recibir tu PIN exacto.`);
       return;
     }
 
     // 3. Check if the PIN was ALREADY BURNED / USED
     const pinKey = `${cleanHandle}:${cleanPin}`;
     if (burnedPins.includes(pinKey)) {
-      setVerificationError(`❌ El PIN "${cleanPin}" para ${cleanHandle} ya fue utilizado y quemado. Deja tu propio comentario en el video para recibir un PIN nuevo.`);
+      setVerificationError(`❌ El PIN "${cleanPin}" para @${cleanHandle} ya fue utilizado y quemado por su dueño. Deja tu propio comentario en el video para recibir un PIN nuevo.`);
       return;
     }
 
     setIsVerifying(true);
 
-    // Simulate PIN redemption and trigger download
+    // Perform verification and trigger download
     setTimeout(() => {
       setIsVerifying(false);
       
@@ -123,11 +129,11 @@ export const YouTubeScriptsVault: React.FC = () => {
         setUnlockedScriptIds((prev) => [...prev, script.id]);
       }
 
+      // Show success alert message inside modal!
+      setVerificationSuccess(`✅ ¡PIN ${cleanPin} Validado Exitosamente para @${cleanHandle}! Descargando ${script.ps1FileName}...`);
+
       // AUTOMATICALLY TRIGGER DOWNLOAD
       triggerDirectDownload(script);
-
-      // Close modal cleanly
-      handleCloseModal();
     }, 600);
   };
 
@@ -236,6 +242,7 @@ export const YouTubeScriptsVault: React.FC = () => {
                       <button
                         onClick={() => {
                           setVerificationError(null);
+                          setVerificationSuccess(null);
                           setUserHandleInput('');
                           setPinInput('');
                           setActiveModalScript(script);
@@ -319,8 +326,17 @@ export const YouTubeScriptsVault: React.FC = () => {
 
               </div>
 
+              {/* SUCCESS ALERT INSIDE MODAL */}
+              {verificationSuccess && (
+                <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{verificationSuccess}</span>
+                </div>
+              )}
+
+              {/* ERROR ALERT INSIDE MODAL */}
               {verificationError && (
-                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-start gap-2">
+                <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-start gap-2">
                   <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
                   <span>{verificationError}</span>
                 </div>
