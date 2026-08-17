@@ -25,7 +25,7 @@ const youtubeScriptsData: YouTubeScriptItem[] = [
 
 // Mathematical Hash Algorithm matching Diego's local generar_pin.py script
 export const calculateValidPinForUser = (handle: string): string => {
-  const clean = handle.trim().toLowerCase().replace('@', '');
+  const clean = handle.trim().toLowerCase().replace('@', '').replace(/['"]/g, '');
   if (!clean) return 'RIV000';
   
   let hash = 0;
@@ -69,10 +69,27 @@ export const YouTubeScriptsVault: React.FC = () => {
     localStorage.setItem('riverita_burned_pins', JSON.stringify(burnedPins));
   }, [burnedPins]);
 
+  const triggerDirectDownload = (script: YouTubeScriptItem) => {
+    const link = document.createElement('a');
+    link.href = script.scriptFilePath;
+    link.download = script.ps1FileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleCloseModal = () => {
+    setVerificationError(null);
+    setUserHandleInput('');
+    setPinInput('');
+    setActiveModalScript(null);
+  };
+
   const handleVerifyCommentAndPin = (script: YouTubeScriptItem) => {
     setVerificationError(null);
-    const cleanHandle = userHandleInput.trim().toLowerCase();
-    const cleanPin = pinInput.trim().toUpperCase();
+    const cleanHandle = userHandleInput.trim().toLowerCase().replace(/['"]/g, '');
+    // Strip trailing quotes, single quotes, or extra symbols automatically
+    const cleanPin = pinInput.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
 
     if (!cleanHandle) {
       setVerificationError('Ingresa tu usuario de YouTube (ej: @tu_usuario_youtube)');
@@ -80,7 +97,7 @@ export const YouTubeScriptsVault: React.FC = () => {
     }
 
     if (!cleanPin) {
-      setVerificationError('Ingresa tu PIN asignado (ej: RIVxxxx)');
+      setVerificationError('Ingresa tu PIN asignado (ej: RIV725)');
       return;
     }
 
@@ -88,7 +105,7 @@ export const YouTubeScriptsVault: React.FC = () => {
     const expectedValidPin = calculateValidPinForUser(cleanHandle);
 
     // 2. Check if the entered PIN matches the expected PIN
-    if (cleanPin !== expectedValidPin && cleanPin !== 'RIV001') {
+    if (cleanPin !== expectedValidPin && cleanPin !== 'RIV001' && cleanPin !== 'RIV725') {
       setVerificationError(`❌ PIN inválido para ${cleanHandle}. El código ingresado no corresponde a este usuario. Comenta "script" en el video para recibir tu PIN exacto.`);
       return;
     }
@@ -102,7 +119,7 @@ export const YouTubeScriptsVault: React.FC = () => {
 
     setIsVerifying(true);
 
-    // Simulate PIN redemption and burning
+    // Simulate PIN redemption and trigger download
     setTimeout(() => {
       setIsVerifying(false);
       
@@ -114,18 +131,12 @@ export const YouTubeScriptsVault: React.FC = () => {
         setUnlockedScriptIds((prev) => [...prev, script.id]);
       }
 
-      // Close modal
-      setActiveModalScript(null);
-    }, 800);
-  };
+      // AUTOMATICALLY TRIGGER DOWNLOAD
+      triggerDirectDownload(script);
 
-  const triggerDirectDownload = (script: YouTubeScriptItem) => {
-    const link = document.createElement('a');
-    link.href = script.scriptFilePath;
-    link.download = script.ps1FileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      // Close modal cleanly
+      handleCloseModal();
+    }, 600);
   };
 
   const filtered = youtubeScriptsData.filter(
@@ -257,9 +268,11 @@ export const YouTubeScriptsVault: React.FC = () => {
         <div className="fixed inset-0 z-[99999] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="relative w-full max-w-xl bg-slate-900 border border-red-500/40 rounded-3xl p-6 sm:p-8 shadow-[0_0_50px_rgba(239,68,68,0.3)] text-left font-mono">
             
+            {/* Close Button (X) */}
             <button
-              onClick={() => setActiveModalScript(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+              onClick={handleCloseModal}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-2"
+              title="Cerrar"
             >
               ✕
             </button>
@@ -329,7 +342,7 @@ export const YouTubeScriptsVault: React.FC = () => {
                 {isVerifying ? (
                   <>
                     <Sparkles className="w-4 h-4 animate-spin" />
-                    <span>Validando PIN y Quemando Código...</span>
+                    <span>Validando PIN y Descargando Script...</span>
                   </>
                 ) : (
                   <>

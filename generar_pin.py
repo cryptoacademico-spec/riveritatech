@@ -1,7 +1,8 @@
 import sys
 
 def calculate_valid_pin(handle):
-    clean = handle.strip().lower().replace('@', '')
+    # Sanitize handle: strip whitespace, quotes, lowercase, remove @
+    clean = handle.strip().lower().replace('@', '').replace("'", "").replace('"', '')
     if not clean:
         return 'RIV000'
     
@@ -10,7 +11,7 @@ def calculate_valid_pin(handle):
         hash_val = ((hash_val << 5) - hash_val) + ord(char)
         hash_val &= 0xFFFFFFFF
     
-    # Handle unsigned 32-bit integer conversion for python
+    # Unsigned 32-bit int conversion
     if hash_val & 0x80000000:
         hash_val = -((~hash_val + 1) & 0xFFFFFFFF)
         
@@ -27,4 +28,4 @@ if __name__ == "__main__":
     print("\n==========================================================")
     print(f" 🔑 PIN PRIVADO PARA {user.upper()}:  {pin}")
     print("==========================================================")
-    print(f"Responde en YouTube: 'Tu PIN único de descarga es: {pin}'\n")
+    print(f"Responde en YouTube: Tu PIN único de descarga es: {pin}\n")
