@@ -31,12 +31,12 @@ const youtubeScriptsData: YouTubeScriptItem[] = [
   }
 ];
 
-// Mathematical Hash Algorithm salted by specific Video ID & Attempt (Supports PIN replacements 1 to 100)
-export const calculateValidPinForUser = (handle: string, videoId: string, attempt: number = 1): string => {
+// Strict Hash Algorithm: Calculates the ONLY single valid PIN for this user & video
+export const calculateValidPinForUser = (handle: string, videoId: string): string => {
   const clean = handle.trim().toLowerCase().replace(/[@'"]/g, '');
   if (!clean) return 'RIV000';
   
-  const salt = `${clean}_${videoId}_v${attempt}`;
+  const salt = `${clean}_${videoId}_official_v1`;
   let hash = 0;
   for (let i = 0; i < salt.length; i++) {
     hash = (hash << 5) - hash + salt.charCodeAt(i);
@@ -118,13 +118,11 @@ export const YouTubeScriptsVault: React.FC = () => {
       return;
     }
 
-    // 1. Calculate valid PINs for attempts 1 through 100 for this user handle AND this specific video ID
-    const validAttemptPins = Array.from({ length: 100 }, (_, i) => 
-      calculateValidPinForUser(cleanHandle, script.videoId, i + 1)
-    );
+    // 1. Calculate the ONLY exact mathematical PIN for this user handle AND this specific video ID
+    const expectedValidPin = calculateValidPinForUser(cleanHandle, script.videoId);
 
-    // 2. ABSOLUTE STRICT VALIDATION: Check if cleanPin matches ANY valid attempt PIN (1..100)
-    if (!validAttemptPins.includes(cleanPin)) {
+    // 2. STRICTEST SINGLE-PIN VALIDATION: Reject any other PIN (RIV805, RIV806, RIV807, RIV808, RIV812, etc.)
+    if (cleanPin !== expectedValidPin) {
       setErrorMap((prev) => ({
         ...prev,
         [scriptId]: `❌ PIN inválido para este video. El PIN "${cleanPin}" no corresponde a este video/usuario. Comenta "script" en el video para recibir tu PIN exacto.`
@@ -208,7 +206,7 @@ export const YouTubeScriptsVault: React.FC = () => {
           />
         </div>
 
-        {/* YouTube Scripts Grid - MULTI VIDEO SUPPORT (INDEPENDENT PIN MATCHING PER VIDEO) */}
+        {/* YouTube Scripts Grid - MULTI VIDEO SUPPORT (INDEPENDENT SINGLE PIN MATCHING PER VIDEO) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {filtered.map((script, idx) => {
             const isUnlocked = unlockedScriptIds.includes(script.id);
@@ -249,7 +247,7 @@ export const YouTubeScriptsVault: React.FC = () => {
                         </button>
                       </div>
                     ) : (
-                      /* DIRECT INLINE FORM - ABSOLUTE STRICT PIN MATCHING PER VIDEO & ATTEMPTS 1..100 */
+                      /* DIRECT INLINE FORM - ABSOLUTE STRICT SINGLE PIN MATCHING PER VIDEO */
                       <div className="bg-slate-950/90 p-5 rounded-2xl border border-white/10 space-y-3.5 font-mono">
                         
                         <div className="flex items-center gap-2 text-xs text-slate-300 font-bold pb-2 border-b border-white/5">
