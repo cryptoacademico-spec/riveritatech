@@ -48,22 +48,14 @@ export const YouTubeScriptsVault: React.FC = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
 
-  // Unlocked scripts and burned PINs persistence
-  const [unlockedScriptIds, setUnlockedScriptIds] = useState<string[]>(() => {
-    const saved = localStorage.getItem('riverita_unlocked_scripts');
-    return saved ? JSON.parse(saved) : [];
-  });
+  // Unlocked scripts per session ONLY (Resets on page refresh so card always starts locked!)
+  const [unlockedScriptIds, setUnlockedScriptIds] = useState<string[]>([]);
 
+  // Burned PINs persist across sessions (So reused PINs are blocked!)
   const [burnedPins, setBurnedPins] = useState<string[]>(() => {
     const saved = localStorage.getItem('riverita_burned_pins');
     return saved ? JSON.parse(saved) : [];
   });
-
-  const [copiedScriptId, setCopiedScriptId] = useState<string | null>(null);
-
-  useEffect(() => {
-    localStorage.setItem('riverita_unlocked_scripts', JSON.stringify(unlockedScriptIds));
-  }, [unlockedScriptIds]);
 
   useEffect(() => {
     localStorage.setItem('riverita_burned_pins', JSON.stringify(burnedPins));
@@ -88,7 +80,7 @@ export const YouTubeScriptsVault: React.FC = () => {
   const handleVerifyCommentAndPin = (script: YouTubeScriptItem) => {
     setVerificationError(null);
     const cleanHandle = userHandleInput.trim().toLowerCase().replace(/['"]/g, '');
-    // Strip trailing quotes, single quotes, or extra symbols automatically
+    // Strip trailing quotes or symbols
     const cleanPin = pinInput.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
 
     if (!cleanHandle) {
@@ -126,7 +118,7 @@ export const YouTubeScriptsVault: React.FC = () => {
       // Permanently BURN this PIN for this user
       setBurnedPins((prev) => [...prev, pinKey]);
 
-      // Unlock script for this video
+      // Unlock script for this session
       if (!unlockedScriptIds.includes(script.id)) {
         setUnlockedScriptIds((prev) => [...prev, script.id]);
       }
