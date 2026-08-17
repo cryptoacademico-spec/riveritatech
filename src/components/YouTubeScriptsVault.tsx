@@ -133,7 +133,7 @@ export const YouTubeScriptsVault: React.FC = () => {
 
       // AUTOMATICALLY TRIGGER BLOB DOWNLOAD
       triggerDirectDownload(script);
-    }, 400);
+    }, 300);
   };
 
   const filtered = youtubeScriptsData.filter(
@@ -234,7 +234,8 @@ export const YouTubeScriptsVault: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => triggerDirectDownload(script)}
-                        className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(16,185,129,0.5)]"
+                        onMouseDown={(e) => e.preventDefault()}
+                        className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(16,185,129,0.5)] select-none"
                       >
                         <Download className="w-4 h-4" /> Descargar {script.ps1FileName}
                       </button>
@@ -248,7 +249,8 @@ export const YouTubeScriptsVault: React.FC = () => {
                           setPinInput('');
                           setActiveModalScript(script);
                         }}
-                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-red-600 to-purple-600 text-white font-mono text-xs font-bold hover:opacity-90 transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.4)]"
+                        onMouseDown={(e) => e.preventDefault()}
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-red-600 to-purple-600 text-white font-mono text-xs font-bold hover:opacity-90 transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.4)] select-none"
                       >
                         <Unlock className="w-3.5 h-3.5" /> Ingresar PIN y Desbloquear
                       </button>
@@ -268,14 +270,15 @@ export const YouTubeScriptsVault: React.FC = () => {
         <div className="fixed inset-0 z-[99999] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
           <div className="relative w-full max-w-xl bg-slate-900 border border-red-500/40 rounded-3xl p-6 sm:p-8 shadow-[0_0_50px_rgba(239,68,68,0.3)] text-left font-mono">
             
-            {/* Instant Close Button (X) */}
+            {/* Instant Single Click Close Button (X) */}
             <button
               type="button"
               onClick={handleCloseModal}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-2 cursor-pointer"
+              onMouseDown={(e) => e.preventDefault()}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-2 cursor-pointer z-50 select-none"
               title="Cerrar"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5 pointer-events-none" />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
@@ -344,10 +347,12 @@ export const YouTubeScriptsVault: React.FC = () => {
                 </div>
               )}
 
+              {/* Instant Single Click Submit Button */}
               <button
                 type="submit"
                 disabled={isVerifying}
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-red-600 via-purple-600 to-emerald-500 text-white font-bold text-sm tracking-wider uppercase shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                onMouseDown={(e) => e.preventDefault()}
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-red-600 via-purple-600 to-emerald-500 text-white font-bold text-sm tracking-wider uppercase shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-2 cursor-pointer select-none z-50"
               >
                 {isVerifying ? (
                   <>
