@@ -31,7 +31,7 @@ const youtubeScriptsData: YouTubeScriptItem[] = [
   }
 ];
 
-// Mathematical Hash Algorithm salted by specific Video ID & Attempt (Supports PIN replacements 1, 2, 3...)
+// Mathematical Hash Algorithm salted by specific Video ID & Attempt (Supports PIN replacements 1 to 100)
 export const calculateValidPinForUser = (handle: string, videoId: string, attempt: number = 1): string => {
   const clean = handle.trim().toLowerCase().replace(/[@'"]/g, '');
   if (!clean) return 'RIV000';
@@ -118,12 +118,12 @@ export const YouTubeScriptsVault: React.FC = () => {
       return;
     }
 
-    // 1. Calculate valid PINs for attempts 1 through 10 for this user handle AND this specific video ID
-    const validAttemptPins = Array.from({ length: 10 }, (_, i) => 
+    // 1. Calculate valid PINs for attempts 1 through 100 for this user handle AND this specific video ID
+    const validAttemptPins = Array.from({ length: 100 }, (_, i) => 
       calculateValidPinForUser(cleanHandle, script.videoId, i + 1)
     );
 
-    // 2. ABSOLUTE STRICT VALIDATION: Check if cleanPin matches ANY valid attempt PIN for this user + video
+    // 2. ABSOLUTE STRICT VALIDATION: Check if cleanPin matches ANY valid attempt PIN (1..100)
     if (!validAttemptPins.includes(cleanPin)) {
       setErrorMap((prev) => ({
         ...prev,
@@ -249,7 +249,7 @@ export const YouTubeScriptsVault: React.FC = () => {
                         </button>
                       </div>
                     ) : (
-                      /* DIRECT INLINE FORM - ABSOLUTE STRICT PIN MATCHING PER VIDEO & ATTEMPT */
+                      /* DIRECT INLINE FORM - ABSOLUTE STRICT PIN MATCHING PER VIDEO & ATTEMPTS 1..100 */
                       <div className="bg-slate-950/90 p-5 rounded-2xl border border-white/10 space-y-3.5 font-mono">
                         
                         <div className="flex items-center gap-2 text-xs text-slate-300 font-bold pb-2 border-b border-white/5">
