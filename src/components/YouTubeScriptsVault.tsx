@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Youtube, Search, Code, CheckCircle2, Copy, Download, Lock, Unlock, Play, ShieldAlert, Sparkles, KeyRound } from 'lucide-react';
+import { Youtube, Search, CheckCircle2, Copy, Download, Lock, Unlock, Play, ShieldAlert, Sparkles } from 'lucide-react';
 import { ArcCardReveal } from './ArcCardReveal';
+import { SvgStrokeDraw } from './SvgStrokeDraw';
 
 interface YouTubeScriptItem {
   id: string;
@@ -22,7 +23,7 @@ const youtubeScriptsData: YouTubeScriptItem[] = [
   }
 ];
 
-// Mathematical Hash Algorithm to compute the ONLY valid PIN for a given YouTube handle
+// Mathematical Hash Algorithm matching Diego's local generar_pin.py script
 export const calculateValidPinForUser = (handle: string): string => {
   const clean = handle.trim().toLowerCase().replace('@', '');
   if (!clean) return 'RIV000';
@@ -46,9 +47,6 @@ export const YouTubeScriptsVault: React.FC = () => {
   const [pinInput, setPinInput] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
-  
-  // Helper for Diego to know what PIN to write in comments
-  const [calcHandle, setCalcHandle] = useState('');
 
   // Unlocked scripts and burned PINs persistence
   const [unlockedScriptIds, setUnlockedScriptIds] = useState<string[]>(() => {
@@ -86,10 +84,10 @@ export const YouTubeScriptsVault: React.FC = () => {
       return;
     }
 
-    // 1. Calculate the EXACT valid PIN required for this user handle
+    // 1. Calculate the EXACT valid PIN required for this user handle matching Diego's local script
     const expectedValidPin = calculateValidPinForUser(cleanHandle);
 
-    // 2. Check if the entered PIN matches the mathematical expected PIN
+    // 2. Check if the entered PIN matches the expected PIN
     if (cleanPin !== expectedValidPin && cleanPin !== 'RIV001') {
       setVerificationError(`❌ PIN inválido para ${cleanHandle}. El código ingresado no corresponde a este usuario. Comenta "script" en el video para recibir tu PIN exacto.`);
       return;
@@ -142,44 +140,20 @@ export const YouTubeScriptsVault: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         
-        {/* Header */}
+        {/* Header - CLEAN PUBLIC INSTRUCTIONS ONLY */}
         <div className="text-center max-w-3xl mx-auto mb-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-mono font-bold tracking-widest uppercase mb-4">
-            <Youtube className="w-4 h-4 text-red-500" /> Bóveda Oficial de Scripts de YouTube
+            <SvgStrokeDraw>
+              <Youtube className="w-4 h-4 text-red-500" />
+            </SvgStrokeDraw>
+            Bóveda Oficial de Scripts de YouTube
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
             Descarga los Scripts de <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-purple-400 to-emerald-400">Nuestros Videos</span>
           </h2>
           <p className="text-slate-400 text-base sm:text-lg mt-4 font-normal">
-            Cada video de nuestro canal tiene su script <code className="text-emerald-400 font-mono">.ps1</code> exclusivo. Comenta en el video en YouTube e ingresa tu PIN único de 1 solo uso para desbloquear tu archivo.
+            Cada video de nuestro canal tiene su script <code className="text-emerald-400 font-mono">.ps1</code> exclusivo. Comenta <strong className="text-white">"script"</strong> en el video en YouTube e ingresa tu PIN único de 1 solo uso que te enviamos en los comentarios para desbloquear tu archivo.
           </p>
-
-          {/* Diego's Fast PIN Calculator Widget */}
-          <div className="mt-6 p-4 rounded-2xl bg-slate-900/90 border border-purple-500/30 max-w-xl mx-auto text-xs font-mono text-slate-300 space-y-2 text-left">
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-purple-300 flex items-center gap-1.5">
-                <KeyRound className="w-4 h-4 text-emerald-400" /> Generador de PINs de Riverita (@RiveritaTech)
-              </span>
-              <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold">
-                1 Solo Uso
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-400">
-              Escribe el usuario que te comentó en YouTube para ver qué PIN responderle en el comentario:
-            </p>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={calcHandle}
-                onChange={(e) => setCalcHandle(e.target.value)}
-                placeholder="Escribe el usuario (ej: @carloscelestino889)"
-                className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-emerald-400"
-              />
-              <div className="px-4 py-2 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-black rounded-xl text-sm flex items-center justify-center font-mono">
-                {calcHandle ? calculateValidPinForUser(calcHandle) : 'RIVxxx'}
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Search Bar */}
@@ -209,7 +183,7 @@ export const YouTubeScriptsVault: React.FC = () => {
 
                   <div className="space-y-4">
                     
-                    {/* ONLY THE VIDEO TITLE (Badge and paragraph description removed as requested!) */}
+                    {/* ONLY THE VIDEO TITLE */}
                     <h3 className="text-xl sm:text-2xl font-bold text-white group-hover:text-red-300 transition-colors leading-snug">
                       {script.videoTitle}
                     </h3>
