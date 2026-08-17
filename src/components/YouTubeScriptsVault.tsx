@@ -20,17 +20,26 @@ const youtubeScriptsData: YouTubeScriptItem[] = [
     youtubeUrl: 'https://www.youtube.com/watch?v=AzdTR59DhD0',
     ps1FileName: '02-Ver-VMs-Filtrar-Estado.ps1',
     scriptFilePath: '/scripts/02-Ver-VMs-Filtrar-Estado.ps1',
+  },
+  {
+    id: 'yt-vmware-powercli-auto',
+    videoTitle: 'Script VMware PowerCLI - Automatización vSphere ⚡',
+    videoId: 'DIPPvQ34v8w',
+    youtubeUrl: 'https://www.youtube.com/watch?v=DIPPvQ34v8w',
+    ps1FileName: '01-Listar-VMs-vCenter.ps1',
+    scriptFilePath: '/scripts/02-Ver-VMs-Filtrar-Estado.ps1',
   }
 ];
 
-// Mathematical Hash Algorithm producing the EXACT SAME PIN as Diego's local generar_pin.py script
-export const calculateValidPinForUser = (handle: string): string => {
+// Mathematical Hash Algorithm salted by specific Video ID (PINs are strictly per video!)
+export const calculateValidPinForUser = (handle: string, videoId: string): string => {
   const clean = handle.trim().toLowerCase().replace(/[@'"]/g, '');
   if (!clean) return 'RIV000';
   
+  const salt = `${clean}_${videoId}`;
   let hash = 0;
-  for (let i = 0; i < clean.length; i++) {
-    hash = (hash << 5) - hash + clean.charCodeAt(i);
+  for (let i = 0; i < salt.length; i++) {
+    hash = (hash << 5) - hash + salt.charCodeAt(i);
     hash |= 0;
   }
   
@@ -41,17 +50,17 @@ export const calculateValidPinForUser = (handle: string): string => {
 export const YouTubeScriptsVault: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   
-  // Verification form states per card
-  const [userHandleInput, setUserHandleInput] = useState('');
-  const [pinInput, setPinInput] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationError, setVerificationError] = useState<string | null>(null);
-  const [verificationSuccess, setVerificationSuccess] = useState<string | null>(null);
+  // Independent input states per video script ID
+  const [userInputs, setUserInputs] = useState<Record<string, string>>({});
+  const [pinInputs, setPinInputs] = useState<Record<string, string>>({});
+  const [verifyingMap, setVerifyingMap] = useState<Record<string, boolean>>({});
+  const [errorMap, setErrorMap] = useState<Record<string, string | null>>({});
+  const [successMap, setSuccessMap] = useState<Record<string, string | null>>({});
 
-  // Unlocked scripts per session ONLY (Resets on page refresh so card always starts locked!)
+  // Unlocked scripts per session ONLY (Resets on page refresh so cards always start locked!)
   const [unlockedScriptIds, setUnlockedScriptIds] = useState<string[]>([]);
 
-  // Burned PINs persist across sessions (So reused PINs are blocked permanently!)
+  // Burned PINs persist across sessions per video (So reused PINs are blocked permanently!)
   const [burnedPins, setBurnedPins] = useState<string[]>(() => {
     const saved = localStorage.getItem('riverita_burned_pins');
     return saved ? JSON.parse(saved) : [];
@@ -88,47 +97,58 @@ export const YouTubeScriptsVault: React.FC = () => {
   };
 
   const handleVerifyCommentAndPin = (script: YouTubeScriptItem) => {
-    setVerificationError(null);
-    setVerificationSuccess(null);
+    const scriptId = script.id;
+    setErrorMap((prev) => ({ ...prev, [scriptId]: null }));
+    setSuccessMap((prev) => ({ ...prev, [scriptId]: null }));
+
+    const rawHandle = userInputs[scriptId] || '';
+    const rawPin = pinInputs[scriptId] || '';
 
     // Normalize handle & PIN
-    const cleanHandle = userHandleInput.trim().toLowerCase().replace(/[@'"]/g, '');
-    const cleanPin = pinInput.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const cleanHandle = rawHandle.trim().toLowerCase().replace(/[@'"]/g, '');
+    const cleanPin = rawPin.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
 
     if (!cleanHandle) {
-      setVerificationError('Ingresa tu usuario de YouTube (ej: @tu_usuario_youtube)');
+      setErrorMap((prev) => ({ ...prev, [scriptId]: 'Ingresa tu usuario de YouTube (ej: @tu_usuario_youtube)' }));
       return;
     }
 
     if (!cleanPin) {
-      setVerificationError('Ingresa tu PIN asignado (ej: RIV577)');
+      setErrorMap((prev) => ({ ...prev, [scriptId]: 'Ingresa tu PIN asignado (ej: RIV577)' }));
       return;
     }
 
-    // 1. Calculate the EXACT mathematical PIN required for this user handle matching generar_pin.py
-    const expectedValidPin = calculateValidPinForUser(cleanHandle);
+    // 1. Calculate the EXACT mathematical PIN required for this user handle AND this specific video ID
+    const expectedValidPin = calculateValidPinForUser(cleanHandle, script.videoId);
 
-    // 2. ABSOLUTE STRICT VALIDATION: ONLY the exact mathematical PIN calculated for cleanHandle is valid! (ZERO BACKDOORS)
+    // 2. ABSOLUTE STRICT VALIDATION: ONLY the exact mathematical PIN calculated for cleanHandle + videoId is valid!
     if (cleanPin !== expectedValidPin) {
-      setVerificationError(`❌ PIN inválido para @${cleanHandle}. El PIN "${cleanPin}" no corresponde a este usuario. Comenta "script" en el video en YouTube para recibir tu PIN exacto.`);
+      setErrorMap((prev) => ({
+        ...prev,
+        [scriptId]: `❌ PIN inválido para este video. El PIN "${cleanPin}" no corresponde a este video/usuario. Comenta "script" en el video para recibir tu PIN exacto.`
+      }));
       return;
     }
 
-    // 3. Check if the PIN was ALREADY BURNED / USED
-    const isPinBurned = burnedPins.includes(cleanPin);
+    // 3. Check if the PIN was ALREADY BURNED / USED for this video
+    const pinKey = `${script.videoId}:${cleanHandle}:${cleanPin}`;
+    const isPinBurned = burnedPins.includes(pinKey) || burnedPins.includes(cleanPin);
     if (isPinBurned) {
-      setVerificationError(`❌ El PIN "${cleanPin}" ya fue utilizado y quemado por su dueño. Por favor solicita un PIN nuevo en los comentarios.`);
+      setErrorMap((prev) => ({
+        ...prev,
+        [scriptId]: `❌ El PIN "${cleanPin}" para este video ya fue utilizado y quemado por su dueño. Por favor solicita un PIN nuevo en los comentarios.`
+      }));
       return;
     }
 
-    setIsVerifying(true);
+    setVerifyingMap((prev) => ({ ...prev, [scriptId]: true }));
 
     // Perform verification, burn PIN, and trigger download
     setTimeout(() => {
-      setIsVerifying(false);
+      setVerifyingMap((prev) => ({ ...prev, [scriptId]: false }));
       
-      // Permanently BURN this PIN in database/localStorage
-      setBurnedPins((prev) => [...prev, cleanPin]);
+      // Permanently BURN this PIN for this specific video
+      setBurnedPins((prev) => [...prev, pinKey, cleanPin]);
 
       // Unlock script for this session
       if (!unlockedScriptIds.includes(script.id)) {
@@ -136,7 +156,10 @@ export const YouTubeScriptsVault: React.FC = () => {
       }
 
       // Show success alert message inside card
-      setVerificationSuccess(`✅ ¡PIN ${cleanPin} Validado Exitosamente! Descargando ${script.ps1FileName}...`);
+      setSuccessMap((prev) => ({
+        ...prev,
+        [scriptId]: `✅ ¡PIN ${cleanPin} Validado Exitosamente para este Video! Descargando ${script.ps1FileName}...`
+      }));
 
       // AUTOMATICALLY TRIGGER BLOB DOWNLOAD
       triggerDirectDownload(script);
@@ -183,10 +206,11 @@ export const YouTubeScriptsVault: React.FC = () => {
           />
         </div>
 
-        {/* YouTube Scripts Grid - INLINE CLEAN CARDS (ZERO POPUPS, ZERO BACKDROP BLUR) */}
+        {/* YouTube Scripts Grid - MULTI VIDEO SUPPORT (INDEPENDENT PIN MATCHING PER VIDEO) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {filtered.map((script, idx) => {
             const isUnlocked = unlockedScriptIds.includes(script.id);
+            const scriptId = script.id;
 
             return (
               <ArcCardReveal key={script.id} index={idx} total={filtered.length}>
@@ -223,7 +247,7 @@ export const YouTubeScriptsVault: React.FC = () => {
                         </button>
                       </div>
                     ) : (
-                      /* DIRECT INLINE FORM - ABSOLUTE STRICT PIN MATCHING */
+                      /* DIRECT INLINE FORM - ABSOLUTE STRICT PIN MATCHING PER VIDEO */
                       <div className="bg-slate-950/90 p-5 rounded-2xl border border-white/10 space-y-3.5 font-mono">
                         
                         <div className="flex items-center gap-2 text-xs text-slate-300 font-bold pb-2 border-b border-white/5">
@@ -238,8 +262,8 @@ export const YouTubeScriptsVault: React.FC = () => {
                             </label>
                             <input
                               type="text"
-                              value={userHandleInput}
-                              onChange={(e) => setUserHandleInput(e.target.value)}
+                              value={userInputs[scriptId] || ''}
+                              onChange={(e) => setUserInputs((prev) => ({ ...prev, [scriptId]: e.target.value }))}
                               placeholder="Ejemplo: @tu_usuario_youtube"
                               className="w-full bg-slate-900 border border-purple-500/40 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-400"
                             />
@@ -247,12 +271,12 @@ export const YouTubeScriptsVault: React.FC = () => {
 
                           <div>
                             <label className="text-[11px] text-slate-400 block mb-1">
-                              2. Tu PIN Único de 1 Solo Uso:
+                              2. Tu PIN Único para ESTE Video:
                             </label>
                             <input
                               type="text"
-                              value={pinInput}
-                              onChange={(e) => setPinInput(e.target.value)}
+                              value={pinInputs[scriptId] || ''}
+                              onChange={(e) => setPinInputs((prev) => ({ ...prev, [scriptId]: e.target.value }))}
                               placeholder="EJEMPLO: RIVxxxx"
                               className="w-full bg-slate-900 border border-red-500/40 rounded-xl px-3.5 py-2 text-xs text-white font-bold tracking-widest focus:outline-none focus:border-emerald-400 uppercase"
                             />
@@ -260,28 +284,28 @@ export const YouTubeScriptsVault: React.FC = () => {
                         </div>
 
                         {/* ERROR ALERT INSIDE CARD */}
-                        {verificationError && (
+                        {errorMap[scriptId] && (
                           <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-start gap-2">
                             <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
-                            <span>{verificationError}</span>
+                            <span>{errorMap[scriptId]}</span>
                           </div>
                         )}
 
                         {/* SUCCESS ALERT INSIDE CARD */}
-                        {verificationSuccess && (
+                        {successMap[scriptId] && (
                           <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-start gap-2">
                             <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
-                            <span>{verificationSuccess}</span>
+                            <span>{successMap[scriptId]}</span>
                           </div>
                         )}
 
                         <button
                           type="button"
                           onClick={() => handleVerifyCommentAndPin(script)}
-                          disabled={isVerifying}
+                          disabled={verifyingMap[scriptId]}
                           className="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 via-purple-600 to-emerald-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-2 cursor-pointer"
                         >
-                          {isVerifying ? (
+                          {verifyingMap[scriptId] ? (
                             <>
                               <Sparkles className="w-4 h-4 animate-spin" />
                               <span>Validando PIN y Descargando Script...</span>
