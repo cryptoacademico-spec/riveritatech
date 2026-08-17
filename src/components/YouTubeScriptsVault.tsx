@@ -31,12 +31,12 @@ const youtubeScriptsData: YouTubeScriptItem[] = [
   }
 ];
 
-// Mathematical Hash Algorithm salted by specific Video ID (PINs are strictly per video!)
-export const calculateValidPinForUser = (handle: string, videoId: string): string => {
+// Mathematical Hash Algorithm salted by specific Video ID & Attempt (Supports PIN replacements 1, 2, 3...)
+export const calculateValidPinForUser = (handle: string, videoId: string, attempt: number = 1): string => {
   const clean = handle.trim().toLowerCase().replace(/[@'"]/g, '');
   if (!clean) return 'RIV000';
   
-  const salt = `${clean}_${videoId}`;
+  const salt = `${clean}_${videoId}_v${attempt}`;
   let hash = 0;
   for (let i = 0; i < salt.length; i++) {
     hash = (hash << 5) - hash + salt.charCodeAt(i);
@@ -118,11 +118,13 @@ export const YouTubeScriptsVault: React.FC = () => {
       return;
     }
 
-    // 1. Calculate the EXACT mathematical PIN required for this user handle AND this specific video ID
-    const expectedValidPin = calculateValidPinForUser(cleanHandle, script.videoId);
+    // 1. Calculate valid PINs for attempts 1 through 10 for this user handle AND this specific video ID
+    const validAttemptPins = Array.from({ length: 10 }, (_, i) => 
+      calculateValidPinForUser(cleanHandle, script.videoId, i + 1)
+    );
 
-    // 2. ABSOLUTE STRICT VALIDATION: ONLY the exact mathematical PIN calculated for cleanHandle + videoId is valid!
-    if (cleanPin !== expectedValidPin) {
+    // 2. ABSOLUTE STRICT VALIDATION: Check if cleanPin matches ANY valid attempt PIN for this user + video
+    if (!validAttemptPins.includes(cleanPin)) {
       setErrorMap((prev) => ({
         ...prev,
         [scriptId]: `❌ PIN inválido para este video. El PIN "${cleanPin}" no corresponde a este video/usuario. Comenta "script" en el video para recibir tu PIN exacto.`
@@ -130,7 +132,7 @@ export const YouTubeScriptsVault: React.FC = () => {
       return;
     }
 
-    // 3. Check if the PIN was ALREADY BURNED / USED for this video
+    // 3. Check if THIS SPECIFIC PIN was ALREADY BURNED / USED for this video
     const pinKey = `${script.videoId}:${cleanHandle}:${cleanPin}`;
     const isPinBurned = burnedPins.includes(pinKey) || burnedPins.includes(cleanPin);
     if (isPinBurned) {
@@ -247,7 +249,7 @@ export const YouTubeScriptsVault: React.FC = () => {
                         </button>
                       </div>
                     ) : (
-                      /* DIRECT INLINE FORM - ABSOLUTE STRICT PIN MATCHING PER VIDEO */
+                      /* DIRECT INLINE FORM - ABSOLUTE STRICT PIN MATCHING PER VIDEO & ATTEMPT */
                       <div className="bg-slate-950/90 p-5 rounded-2xl border border-white/10 space-y-3.5 font-mono">
                         
                         <div className="flex items-center gap-2 text-xs text-slate-300 font-bold pb-2 border-b border-white/5">

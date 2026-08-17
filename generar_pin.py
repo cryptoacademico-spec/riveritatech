@@ -6,12 +6,12 @@ VIDEOS = {
     "2": {"id": "DIPPvQ34v8w", "title": "Cómo conectarse a vCenter 9.1 con PowerCLI 🚀"}
 }
 
-def calculate_valid_pin(handle, video_id):
+def calculate_valid_pin(handle, video_id, attempt=1):
     clean = handle.strip().lower().replace('@', '').replace("'", "").replace('"', '')
     if not clean:
         return 'RIV000'
     
-    salt = f"{clean}_{video_id}"
+    salt = f"{clean}_{video_id}_v{attempt}"
     hash_val = 0
     for char in salt:
         hash_val = ((hash_val << 5) - hash_val) + ord(char)
@@ -39,10 +39,18 @@ if __name__ == "__main__":
     
     user = sys.argv[1] if len(sys.argv) > 1 else input("\nIngresa el usuario de YouTube (ej: @carloscelestino889): ")
     
-    pin = calculate_valid_pin(user, video_info["id"])
+    attempt_str = sys.argv[3] if len(sys.argv) > 3 else input("¿Número de Intento/PIN para este usuario? (1 para el primero, 2 para un reemplazo/nuevo, por defecto 1): ")
+    try:
+        attempt = int(attempt_str)
+    except ValueError:
+        attempt = 1
+
+    pin = calculate_valid_pin(user, video_info["id"], attempt)
     
     print("\n==========================================================")
     print(f" 🎬 VIDEO: {video_info['title']}")
-    print(f" 🔑 PIN PRIVADO UNICO PARA {user.upper()}:  {pin}")
+    print(f" 🔑 PIN PRIVADO MATEMATICO (Intento #{attempt}) PARA {user.upper()}:  {pin}")
     print("==========================================================")
-    print(f"Responde en YouTube: Tu PIN único de descarga es: {pin}\n")
+    print(f"Responde en YouTube: Tu PIN único de descarga es: {pin}")
+    print("Nota: Si este usuario necesita un 2do PIN nuevo (porque ya quemó el 1ro), ejecuta:")
+    print(f"      python generar_pin.py {user} {v_option} 2\n")
