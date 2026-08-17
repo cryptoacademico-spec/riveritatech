@@ -1,6 +1,6 @@
 import React from 'react';
 import { BroadcomVCFLogo } from './BroadcomVCFLogo';
-import { Menu, X, LogOut, ShieldCheck } from 'lucide-react';
+import { Menu, X, LogOut, ShieldCheck, Youtube } from 'lucide-react';
 
 interface NavbarProps {
   currentPage: string;
@@ -36,7 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between p-4 px-6">
         
         {/* LOGO CORPORATIVO EXECUTIVE (RIVERITA TECH) */}
-        <div onClick={() => setPage('home')}>
+        <div onClick={() => setPage('home')} className="cursor-pointer">
           <BroadcomVCFLogo />
         </div>
 
@@ -78,23 +78,27 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* CENTER NAVIGATION LINKS */}
         <div className={`items-center justify-between w-full md:flex md:w-auto md:order-1 ${mobileMenuOpen ? 'block mt-4' : 'hidden'}`}>
-          <ul className="flex flex-col p-4 md:p-0 font-medium border border-white/10 rounded-2xl bg-slate-900/90 md:space-x-8 md:flex-row md:mt-0 md:border-0 md:bg-transparent">
+          <ul className="flex flex-col p-4 md:p-0 font-medium border border-white/10 rounded-2xl bg-slate-900/90 md:space-x-6 md:flex-row md:mt-0 md:border-0 md:bg-transparent">
             {[
               { id: 'home', label: 'Inicio' },
               { id: 'labs', label: 'Laboratorios VMware' },
               { id: 'scripts', label: 'PowerCLI Scripts' },
+              { id: 'youtube-scripts', label: 'YouTube Scripts', isYoutube: true },
               { id: 'tutorials', label: 'Academia' },
               { id: 'about', label: 'Sobre Mí (Riverita)' }
             ].map((link) => (
               <li key={link.id}>
                 <button 
                   onClick={() => { setPage(link.id); setMobileMenuOpen(false); }}
-                  className={`block py-2 px-4 md:p-0 rounded-lg text-sm transition-all text-left w-full cursor-pointer ${
+                  className={`py-2 px-3 md:p-0 rounded-lg text-sm transition-all text-left w-full cursor-pointer flex items-center gap-1.5 ${
                     currentPage === link.id 
                       ? 'text-emerald-400 font-bold drop-shadow-[0_0_10px_rgba(16,185,129,0.6)]' 
+                      : link.isYoutube
+                      ? 'text-red-400 font-bold hover:text-red-300'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
+                  {link.isYoutube && <Youtube className="w-4 h-4 text-red-500" />}
                   {link.label}
                 </button>
               </li>
@@ -102,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </ul>
         </div>
 
-      </div>
+        </div>
     </nav>
   );
 };

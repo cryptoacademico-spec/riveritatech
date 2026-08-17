@@ -3,6 +3,7 @@ import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { BroadcomVMwareBadges } from './components/BroadcomVMwareBadges';
 import { PowerCLITerminal } from './components/PowerCLITerminal';
+import { YouTubeScriptsVault } from './components/YouTubeScriptsVault';
 import { LabsSection } from './components/LabsSection';
 import { ScriptsSection } from './components/ScriptsSection';
 import { TutorialsSection } from './components/TutorialsSection';
@@ -190,6 +191,7 @@ export function App() {
           <>
             <Hero setPage={setCurrentPage} onOpenAuth={() => setIsAuthOpen(true)} scrollProgress={normalizedScroll} />
             <BroadcomVMwareBadges />
+            <YouTubeScriptsVault />
             <PowerCLITerminal />
             <LabsSection />
             <ScriptsSection />
@@ -204,6 +206,12 @@ export function App() {
               testimonials={testimonials}
             />
           </>
+        )}
+
+        {currentPage === 'youtube-scripts' && (
+          <div>
+            <YouTubeScriptsVault />
+          </div>
         )}
 
         {currentPage === 'labs' && (
