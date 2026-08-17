@@ -57,6 +57,18 @@ export const YouTubeScriptsVault: React.FC = () => {
   const [errorMap, setErrorMap] = useState<Record<string, string | null>>({});
   const [successMap, setSuccessMap] = useState<Record<string, string | null>>({});
 
+  // Auto-filter card if URL has video ID parameter (e.g. ?v=AzdTR59DhD0)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const videoParam = params.get('v');
+    if (videoParam) {
+      const match = youtubeScriptsData.find(s => s.videoId.toLowerCase() === videoParam.toLowerCase());
+      if (match) {
+        setSearchTerm(match.videoTitle);
+      }
+    }
+  }, []);
+
   // Unlocked scripts per session ONLY (Resets on page refresh so cards always start locked!)
   const [unlockedScriptIds, setUnlockedScriptIds] = useState<string[]>([]);
 
