@@ -28,6 +28,14 @@ const youtubeScriptsData: YouTubeScriptItem[] = [
     youtubeUrl: 'https://www.youtube.com/watch?v=DIPPvQ34v8w',
     ps1FileName: '01-Conectarse-a-vCenter.ps1',
     scriptFilePath: '/scripts/01-Conectarse-a-vCenter.ps1',
+  },
+  {
+    id: 'yt-vcenter-91-datastore',
+    videoTitle: 'Reporte de Datastores en vCenter 9.1 con PowerCLI 📊',
+    videoId: 'l0zXbUCbb68',
+    youtubeUrl: 'https://www.youtube.com/watch?v=l0zXbUCbb68',
+    ps1FileName: '09-Reporte-Datastores.ps1',
+    scriptFilePath: '/scripts/09-Reporte-Datastores.ps1',
   }
 ];
 
@@ -57,7 +65,7 @@ export const YouTubeScriptsVault: React.FC = () => {
   const [errorMap, setErrorMap] = useState<Record<string, string | null>>({});
   const [successMap, setSuccessMap] = useState<Record<string, string | null>>({});
 
-  // Auto-filter card if URL has video ID parameter (e.g. ?v=AzdTR59DhD0)
+  // Auto-filter card if URL has video ID parameter (e.g. ?v=l0zXbUCbb68)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const videoParam = params.get('v');
@@ -143,7 +151,7 @@ export const YouTubeScriptsVault: React.FC = () => {
     if (!validAttemptPins.includes(cleanPin)) {
       setErrorMap((prev) => ({
         ...prev,
-        [scriptId]: `❌ PIN inválido para este video. El PIN "${cleanPin}" no corresponde a este video/usuario. Comenta "script" en el video para recibir tu PIN exacto.`
+        [scriptId]: `❌ PIN inválido para este video. El PIN "${cleanPin}" no corresponde a este video/usuario. Comenta "datastore" en el video para recibir tu PIN exacto.`
       }));
       return;
     }
@@ -208,7 +216,7 @@ export const YouTubeScriptsVault: React.FC = () => {
             Descarga los Scripts de <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-purple-400 to-emerald-400">Nuestros Videos</span>
           </h2>
           <p className="text-slate-400 text-base sm:text-lg mt-4 font-normal">
-            Cada video de nuestro canal tiene su script <code className="text-emerald-400 font-mono">.ps1</code> exclusivo. Comenta <strong className="text-white">"script"</strong> en el video en YouTube e ingresa tu PIN único de 1 solo uso que te enviamos en los comentarios para desbloquear tu archivo.
+            Cada video de nuestro canal tiene su script <code className="text-emerald-400 font-mono">.ps1</code> exclusivo. Comenta en el video e ingresa tu PIN único de 1 solo uso que te enviamos en los comentarios para desbloquear tu archivo.
           </p>
         </div>
 
@@ -225,14 +233,14 @@ export const YouTubeScriptsVault: React.FC = () => {
         </div>
 
         {/* YouTube Scripts Grid - MULTI VIDEO SUPPORT (INDEPENDENT PIN MATCHING PER VIDEO) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {filtered.map((script, idx) => {
             const isUnlocked = unlockedScriptIds.includes(script.id);
             const scriptId = script.id;
 
             return (
               <ArcCardReveal key={script.id} index={idx} total={filtered.length}>
-                <div className="group relative glass-card-luxury p-6 sm:p-8 rounded-3xl border border-white/10 flex flex-col justify-between transition-all duration-300 overflow-hidden">
+                <div className="group relative glass-card-luxury p-6 sm:p-8 rounded-3xl border border-white/10 flex flex-col justify-between transition-all duration-300 overflow-hidden h-full">
                   
                   {/* Corner Crosshairs */}
                   <div className="absolute top-3 left-3 text-slate-500/40 text-xs font-mono select-none pointer-events-none group-hover:text-red-400 transition-colors">+</div>
