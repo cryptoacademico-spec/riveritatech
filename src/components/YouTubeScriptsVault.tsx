@@ -31,7 +31,7 @@ const youtubeScriptsData: YouTubeScriptItem[] = [
   },
   {
     id: 'yt-vcenter-91-datastore',
-    videoTitle: 'Reporte de Datastores en vCenter 9.1 con PowerCLI 📊',
+    videoTitle: 'Domina el Almacenamiento en VMware con PowerCLI: Datastores, LUNs y Reportes CSV 📊',
     videoId: 'l0zXbUCbb68',
     youtubeUrl: 'https://www.youtube.com/watch?v=l0zXbUCbb68',
     ps1FileName: '09-Reporte-Datastores.ps1',

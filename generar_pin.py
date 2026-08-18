@@ -25,7 +25,7 @@ def save_history(history):
 VIDEOS = {
     "1": {"id": "AzdTR59DhD0", "title": "Como listar y filtrar VMs en vCenter 9.1 con PowerCLI"},
     "2": {"id": "DIPPvQ34v8w", "title": "Como conectarse a vCenter 9.1 con PowerCLI"},
-    "3": {"id": "l0zXbUCbb68", "title": "Reporte de Datastores en vCenter 9.1 con PowerCLI"}
+    "3": {"id": "l0zXbUCbb68", "title": "Domina el Almacenamiento en VMware con PowerCLI: Datastores, LUNs y Reportes CSV"}
 }
 
 def calculate_pin_for_attempt(handle, video_id, attempt):
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     print(" SELECCIONA EL VIDEO DE YOUTUBE:")
     print(" 1. Como listar y filtrar VMs en vCenter 9.1 con PowerCLI")
     print(" 2. Como conectarse a vCenter 9.1 con PowerCLI")
-    print(" 3. Reporte de Datastores en vCenter 9.1 con PowerCLI")
+    print(" 3. Domina el Almacenamiento en VMware con PowerCLI: Datastores, LUNs y Reportes CSV")
     print("==========================================================")
     
     try:
